@@ -117,11 +117,19 @@
     var st = price.state;
     el.rateManualField.hidden = mode !== 'manual';
 
-    var label = mode === 'manual' ? 'دستی' : 'خودکار';
-    var txt = st.tomanRate
-      ? label + ' — هر دلار ' + fmt.num(st.tomanRate, 0) + ' تومان'
-      : 'در انتظار دریافت نرخ…';
-    if (mode === 'auto' && st.tomanSource !== 'auto') txt += ' (دریافت خودکار ناموفق؛ مقدار ذخیره‌شده)';
+    var txt;
+    if (st.tomanRate == null) {
+      txt = mode === 'manual'
+        ? 'نرخ دستی نامعتبر است — عددی بین ۵۰٬۰۰۰ تا ۹۰۰٬۰۰۰ وارد کنید'
+        : 'نرخ دلار در دسترس نیست — از «دستی» نرخ را وارد کنید';
+      if (mode === 'manual') el.rateManual.classList.add('input-error');
+    } else {
+      if (mode === 'manual') el.rateManual.classList.remove('input-error');
+      var label = mode === 'manual' ? 'دستی' :
+        (st.tomanSource === 'auto' ? 'خودکار' : 'آخرین نرخ ذخیره‌شده');
+      txt = label + ' — هر دلار ' + fmt.num(st.tomanRate, 0) + ' تومان';
+      if (mode === 'auto' && st.tomanSource !== 'auto') txt += ' (آنلاین در دسترس نیست)';
+    }
     el.rateStatus.textContent = txt;
 
     var btns = el.rateModeBtns;
@@ -417,9 +425,10 @@
     el.calcInput.value = S.get(K.CALC_INPUT, null) != null
       ? S.get(K.CALC_INPUT, '')
       : (S.get(K.HOLDINGS, C.DEFAULT_HOLDINGS) || '');
-    el.rateManual.value = S.get(K.RATE_MANUAL, null) != null
-      ? S.get(K.RATE_MANUAL, null)
-      : C.DEFAULT_TOMAN_RATE;
+    el.rateManual.value = (function () {
+      var m = S.get(K.RATE_MANUAL, null);
+      return m != null ? m : '';
+    })();
 
     var calcDir = S.get(K.CALC_DIR, 'pi2usd');
     el.calcDirBtns.forEach(function (b) {

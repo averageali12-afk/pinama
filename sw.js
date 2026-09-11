@@ -1,7 +1,7 @@
 /* پی‌نما — Service Worker: کش آفلاین app shell + به‌روزرسانی در پس‌زمینه */
 'use strict';
 
-const CACHE = 'pinama-v1';
+const CACHE = 'pinama-v2';
 
 /* app shell — همه با نسخه‌بندی implicit در CACHE name */
 const ASSETS = [
@@ -66,7 +66,7 @@ self.addEventListener('fetch', function (event) {
   if (req.method !== 'GET') return;
 
   /* APIهای قیمت/نرخ: network-first (داده تازه مهم‌تر از آفلاین)؛ در قطعی، آخرین پاسخ کش‌شده */
-  const isApi = /api\.coingecko\.com|okx\.com|tgju\.org/.test(url.hostname);
+  const isApi = /api\.coingecko\.com|okx\.com|gateio\.ws|wallex\.ir|tgju\.org/.test(url.hostname);
   if (isApi) {
     event.respondWith(
       fetch(req).then(function (res) {

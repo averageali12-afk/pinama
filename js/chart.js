@@ -106,10 +106,9 @@
 
     // مسیر خط
     var linePath = new Path2D();
-    first = true;
     for (var k = 0; k < s.length; k++) {
       var lx = X(s[k][0]), ly = Y(s[k][1]);
-      if (first) { linePath.moveTo(lx, ly); first = false; }
+      if (k === 0) linePath.moveTo(lx, ly);
       else linePath.lineTo(lx, ly);
     }
     var fill = new Path2D(linePath);

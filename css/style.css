@@ -313,6 +313,7 @@ body {
 }
 .field input:focus, .select:focus { border-color: var(--purple); }
 .field input::placeholder { color: var(--text-faint); }
+.field input.input-error { border-color: var(--red); background: var(--red-soft); }
 
 .select {
   appearance: none;

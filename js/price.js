@@ -44,12 +44,13 @@
     fetchedAt: null,
     error: false,       // آخرین دریافت کامل شکست خورد
     tomanRate: null,    // نرخ فعلی
-    tomanSource: null,  // 'auto' | 'manual' | 'default'
+    tomanSource: null,  // 'auto' | 'manual' | 'fallback' | 'none'
     tomanAt: null
   };
 
   var listeners = [];
   var seriesCache = {}; // days -> { data, fetchedAt }
+  var seriesInflight = {}; // days -> Promise (هم‌زمانی درخواست‌ها را ادغام می‌کند)
 
   function emit() {
     listeners.forEach(function (fn) {
@@ -70,7 +71,25 @@
     });
   }
 
-  /* ─── منبع ۱: CoinGecko ─── */
+  /* ─── منبع ۱: Gate.io (در ایران قابل دسترس) ─── */
+  function fromGate() {
+    return fetchJson(C.GATE_TICKER).then(function (rows) {
+      var r = rows && rows[0];
+      if (!r || !r.last) throw new Error('empty');
+      var last = parseFloat(r.last);
+      return {
+        usd: last,
+        change24h: r.change_percentage != null ? parseFloat(r.change_percentage) : null,
+        high24h: parseFloat(r.high_24h || 'NaN'),
+        low24h: parseFloat(r.low_24h || 'NaN'),
+        marketCap: null,
+        volume24h: parseFloat(r.base_volume || 'NaN'),
+        source: 'Gate.io'
+      };
+    });
+  }
+
+  /* ─── منبع ۲: CoinGecko ─── */
   function fromCoinGecko() {
     return fetchJson(C.COINGECKO_MARKETS).then(function (rows) {
       if (!rows || !rows.length) throw new Error('empty');
@@ -87,7 +106,7 @@
     });
   }
 
-  /* ─── منبع ۲: OKX ─── */
+  /* ─── منبع ۳: OKX ─── */
   function fromOkx() {
     return fetchJson(C.OKX_TICKER).then(function (json) {
       var d = json && json.data && json.data[0];
@@ -106,9 +125,10 @@
     });
   }
 
-  /* ─── دریافت قیمت ─── */
+  /* ─── دریافت قیمت: اولین منبع موفق برنده ─── */
   function refresh() {
-    return fromCoinGecko()
+    return fromGate()
+      .catch(function () { return fromCoinGecko(); })
       .catch(function () { return fromOkx(); })
       .then(function (snap) {
         state.usd = snap.usd;
@@ -143,26 +163,50 @@
       });
   }
 
-  /* ─── سری زمانی نمودار ─── */
+  /* ─── سری زمانی نمودار: CoinGecko، سپس Gate.io ─── */
+  function seriesFromGate(days) {
+    var tf = C.GATE_TF[days] || C.GATE_TF[7];
+    return fetchJson(C.GATE_CANDLES + tf.interval + '&limit=' + tf.count)
+      .then(function (rows) {
+        if (!rows || rows.length < 2) throw new Error('empty');
+        // کندل: [timestamp, quote_volume, open, high, low, close, base_volume, complete]
+        return rows.map(function (r) { return [r[0] * 1000, parseFloat(r[2])]; });
+      });
+  }
+
   function loadSeries(days) {
     var key = String(days);
     var cached = seriesCache[key] || S.get(C.KEYS.SERIES + key, null);
+    var ttl = days === 1 ? C.SERIES_TTL_MS : C.CHART_TTL_MS;
     var fresh = cached && cached.data && cached.data.length > 1 &&
-      (Date.now() - cached.fetchedAt) < C.SERIES_TTL_MS;
+      (Date.now() - cached.fetchedAt) < ttl;
     if (fresh) {
       seriesCache[key] = cached;
       return Promise.resolve(cached.data);
     }
-    return fetchJson(C.COINGECKO_CHART + days).then(function (json) {
-      if (!json || !json.prices || json.prices.length < 2) throw new Error('empty');
-      var entry = { data: json.prices, fetchedAt: Date.now() };
-      seriesCache[key] = entry;
-      S.set(C.KEYS.SERIES + key, entry);
-      return entry.data;
-    });
+    if (seriesInflight[key]) return seriesInflight[key];
+
+    seriesInflight[key] = seriesFromGate(days)
+      .catch(function () {
+        return fetchJson(C.COINGECKO_CHART + days).then(function (json) {
+          if (!json || !json.prices || json.prices.length < 2) throw new Error('empty');
+          return json.prices;
+        });
+      })
+      .then(function (data) {
+        var entry = { data: data, fetchedAt: Date.now() };
+        seriesCache[key] = entry;
+        S.set(C.KEYS.SERIES + key, entry);
+        return entry.data;
+      })
+      .finally(function () {
+        delete seriesInflight[key];
+      });
+
+    return seriesInflight[key];
   }
 
-  /* ─── نرخ دلار/تومان ─── */
+  /* ─── نرخ دلار/تومان: Wallex (رایگان و در دسترس) → tgju ─── */
   function parseTomanFromTgju(json) {
     var cur = json && json.current && (json.current.price_dollar_rl || json.current.price_usd);
     var p = cur && cur.p;
@@ -173,34 +217,68 @@
     return v;
   }
 
+  function plausibleRate(v) {
+    return isFinite(v) && v >= C.TOMAN_MIN && v <= C.TOMAN_MAX;
+  }
+
+  function fromWallex() {
+    // رمضینکس: usdt/irr، جفت ۱۱ — قیمت‌ها به ریال
+    return fetchJson(C.RAMZINEX_USDTIRR).then(function (json) {
+      var p = json && json.data;
+      if (!p) throw new Error('empty');
+      var rial = parseFloat(p.sell != null ? p.sell : p.buy);
+      if (!isFinite(rial) || rial <= 0) {
+        var f = p.financial && p.financial.last24h && p.financial.last24h.close;
+        rial = parseFloat(f);
+      }
+      if (!isFinite(rial) || rial <= 0) throw new Error('empty');
+      return rial / 10; // ریال → تومان
+    });
+  }
+
   function refreshTomanRate() {
     var mode = S.get(C.KEYS.RATE_MODE, 'auto');
     var manual = S.get(C.KEYS.RATE_MANUAL, null);
 
     if (mode === 'manual') {
-      state.tomanRate = manual != null ? manual : C.DEFAULT_TOMAN_RATE;
-      state.tomanSource = 'manual';
+      var m = manual != null && plausibleRate(manual) ? manual : null;
+      state.tomanRate = m;
+      state.tomanSource = m != null ? 'manual' : 'none';
       state.tomanAt = Date.now();
       emit();
       return Promise.resolve(state.tomanRate);
     }
 
-    return fetchJson(C.TJGU_URL).then(function (json) {
-      var v = parseTomanFromTgju(json);
-      if (v == null) throw new Error('parse');
-      state.tomanRate = v;
-      state.tomanSource = 'auto';
-      state.tomanAt = Date.now();
-      S.set(C.KEYS.RATE_AUTO, v);
-      emit();
-      return v;
-    }).catch(function () {
-      state.tomanRate = S.get(C.KEYS.RATE_AUTO, null) || manual || C.DEFAULT_TOMAN_RATE;
-      state.tomanSource = state.tomanRate === C.DEFAULT_TOMAN_RATE ? 'default' : 'fallback';
-      state.tomanAt = Date.now();
-      emit();
-      return state.tomanRate;
-    });
+    return fromWallex()
+      .catch(function () {
+        return fetchJson(C.TJGU_URL).then(function (json) {
+          var v = parseTomanFromTgju(json);
+          if (v == null) throw new Error('parse');
+          return v;
+        });
+      })
+      .then(function (v) {
+        var toman = plausibleRate(v) ? v : null;
+        if (toman == null) throw new Error('implausible rate: ' + v);
+        state.tomanRate = toman;
+        state.tomanSource = 'auto';
+        state.tomanAt = Date.now();
+        S.set(C.KEYS.RATE_AUTO, toman);
+        emit();
+        return toman;
+      })
+      .catch(function () {
+        // کش آخرین نرخ معتبر؛ بدون آن null → UI درخواست ورود دستی می‌کند
+        var cached = S.get(C.KEYS.RATE_AUTO, null);
+        var manual = S.get(C.KEYS.RATE_MANUAL, null);
+        state.tomanRate = (cached != null && plausibleRate(cached)) ? cached
+          : (manual != null && plausibleRate(manual)) ? manual
+            : null;
+        state.tomanSource = state.tomanRate != null ? 'fallback' : 'none';
+        state.tomanAt = Date.now();
+        emit();
+        return state.tomanRate;
+      });
   }
 
   function setManualRate(v) {
@@ -230,10 +308,21 @@
       state.source = cached.source + ' (کش)';
       state.error = true; // تا رسیدن پاسخ زنده، وضعیت «کهنه» است
     }
-    state.tomanRate = S.get(C.KEYS.RATE_AUTO, null) ||
-      S.get(C.KEYS.RATE_MANUAL, null) ||
-      C.DEFAULT_TOMAN_RATE;
-    state.tomanSource = S.get(C.KEYS.RATE_AUTO, null) ? 'fallback' : 'default';
+    var rateCached = S.get(C.KEYS.RATE_AUTO, null);
+    var rateManual = S.get(C.KEYS.RATE_MANUAL, null);
+    if (S.get(C.KEYS.RATE_MODE, 'auto') === 'manual' && rateManual != null && plausibleRate(rateManual)) {
+      state.tomanRate = rateManual;
+      state.tomanSource = 'manual';
+    } else if (rateCached != null && plausibleRate(rateCached)) {
+      state.tomanRate = rateCached;
+      state.tomanSource = 'fallback';
+    } else if (rateManual != null && plausibleRate(rateManual)) {
+      state.tomanRate = rateManual;
+      state.tomanSource = 'manual';
+    } else {
+      state.tomanRate = null;
+      state.tomanSource = 'none';
+    }
     emit();
   }
 
