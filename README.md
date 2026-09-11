@@ -1,5 +1,8 @@
 # پی‌نما 🟣 — ردیاب قیمت Pi برای اکوسیستم Pi Network
 
+**نسخه زنده:** [https://averageali12-afk.github.io/pinama/](https://averageali12-afk.github.io/pinama/) 🚀
+**کد منبع:** [github.com/averageali12-afk/pinama](https://github.com/averageali12-afk/pinama)
+
 اپ وب فارسی و راست‌به‌چپ برای نمایش **قیمت لحظه‌ای Pi**، نمودار، ماشین‌حساب تومانی، پرتفوی شخصی و هشدار قیمت — ساخته‌شده برای اجرا داخل **Pi Browser** و آمادهٔ اتصال به **Pi SDK** (ورود با Pi + تبلیغات Ad Network).
 
 بدون ابزار build — فقط HTML/CSS/JS خالص. هر هاست استاتیکی (GitHub Pages، Cloudflare Pages، Netlify، هاست شخصی) کافی است.
@@ -35,34 +38,35 @@ node serve.js          # پیش‌فرض پورت 3000
 2. در Pi Browser آدرس `develop.pi` را باز کنید و با حساب Pi وارد شوید.
 3. **Register an app** را بزنید:
    - **App Name:** `PiNama` (پی‌نما)
-   - **App URL:** آدرس HTTPS اپ شما (بعد از دیپلوی — ببینید بخش بعد)
+   - **App URL:** `https://averageali12-afk.github.io/pinama/`
    - **Permission:** ابتدا `Pi Utilities` کافی است.
 4. بعد از ثبت، **App ID** (با پیشوند `pi-app-...`) را بردارید.
-5. اپ باید **Terms of Service** و **Privacy Policy** داشته باشد — دو صفحهٔ ساده به اپ اضافه کنید (در نسخه بعدی اضافه می‌شود؛ برای تأیید Ecosystem الزامی است).
-6. برای تست داخل Pi Browser از دامنهٔ دیپلویشده باز کنید — دکمه «ورود با Pi» فقط آنجا کار می‌کند.
+5. اپ باید **Terms of Service** و **Privacy Policy** داشته باشد — ✅ آماده است: [terms.html](terms.html) و [privacy.html](privacy.html) (در تنظیمات اپ هم لینک شده‌اند).
+6. برای تست داخل Pi Browser از آدرس [https://averageali12-afk.github.io/pinama/](https://averageali12-afk.github.io/pinama/) باز کنید — دکمه «ورود با Pi» فقط آنجا کار می‌کند.
 
 > ⚠️ اسکریپت `pi-sdk.js` بدون App ID هم لود می‌شود، اما `Pi.authenticate` فقط برای اپ ثبت‌شده روی همان دامنه پاسخ می‌دهد.
 
-## 🌍 دیپلوی (رایگان)
+## 🌍 دیپلوی (خودکار)
 
-- **GitHub Pages:** ریپو بسازید → پوش‌ کنید → Settings → Pages → از شاخه main پوشه root.
-- **Cloudflare Pages / Netlify:** اتصال ریپو، بدون تنظیمات build (خروجی: `/`).
-- بعد از دیپلوی، URL را در Developer Portal به‌روز کنید.
+✅ انجام شده — ریپو [averageali12-afk/pinama](https://github.com/averageali12-afk/pinama) با GitHub Actions (`deploy.yml`) روی GitHub Pages سرو می‌شود. هر push به شاخه main به‌صورت خودکار منتشر می‌شود؛ نیازی به تنظیمات دستی نیست.
 
 ## 💰 مسیر درآمد (چک‌لیست)
 
-1. ☐ دیپلوی HTTPS ✅ (این ریپو)
-2. ☐ ثبت در Developer Portal + App ID
-3. ☐ افزودن صفحات Terms / Privacy
+1. ✅ دیپلوی HTTPS — [https://averageali12-afk.github.io/pinama/](https://averageali12-afk.github.io/pinama/) (هر push به main خودکار دیپلوی می‌شود)
+2. ☐ ثبت در Developer Portal + App ID — **تنها قدم باقی‌مانده که نیاز به حسابت Pi دارد**
+3. ✅ صفحات Terms / Privacy — [terms.html](terms.html) و [privacy.html](privacy.html)
 4. ☐ ارسال برای **Ecosystem Directory** (از Developer Portal) — تأیید چند هفته طول می‌کشد
 5. ☐ پس از تأیید Ecosystem → درخواست **Pi Ad Network** از Developer Portal (Develop → اپ → Ad Network)
-6. ☐ کد تبلیغات از قبل داخل اپ هست (`js/ads.js`) — بعد از تأیید بدون تغییر کد فعال می‌شود
+6. ✅ کد تبلیغات از قبل داخل اپ هست (`js/ads.js`) — بعد از تأیید بدون تغییر کد فعال می‌شود
 7. ☐ نسخه بعدی: پرداخت/حمایت با Pi (نیازمند بک‌اند برای تأیید پرداخت — `Pi.createPayment`)
 
 ## 🗂 ساختار پروژه
 
 ```
 index.html          ← تک‌صفحه‌ای، RTL فارسی، ۴ تب
+terms.html          ← شرایط استفاده (لازم برای تأیید Ecosystem)
+privacy.html        ← سیاست حریم خصوصی
+robots.txt          ← اجازه ایندکس
 css/style.css       ← تم تیره بنفش/طلایی، موبایل‌محور
 js/config.js        ← تنظیمات و کلیدها
 js/storage.js       ← لایه امن localStorage
@@ -72,6 +76,8 @@ js/pi.js            ← لایه Pi SDK (ورود، اشتراک‌گذاری)
 js/ads.js           ← تبلیغات Ad Network (interstitial + rewarded)
 js/alerts.js        ← منطق هشدار قیمت
 js/app.js           ← اتصال DOM، رویدادها، رندر
+serve.js            ← سرور استاتیک محلی (node serve.js)
+test/smoke.js       ← تست دود منطق (node test/smoke.js)
 ```
 
 ## 🔒 نکته‌های فنی
@@ -83,7 +89,7 @@ js/app.js           ← اتصال DOM، رویدادها، رندر
 
 ## 🗺 نقشه راه (نسخه‌های بعد)
 
-- [ ] صفحات Terms of Service و Privacy Policy
+- [x] صفحات Terms of Service و Privacy Policy
 - [ ] پشتیبانی چند ارز دیگر
 - [ ] ویجت اندروید PWA + آفلاین کامل (Service Worker)
 - [ ] پرداخت حمایتی با Pi (با بک‌اند تأیید)
