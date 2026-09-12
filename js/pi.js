@@ -18,7 +18,17 @@
           this.sdkReady = true;
         } catch (e) {
           this.sdkReady = false;
+          // بازخورد کاربر به‌جای خطای خام — معمولاً App ID ناهماهنگ با دامنه
+          if (this.inPiBrowser) {
+            setTimeout(function () {
+              PiNama.toast('Pi SDK راه‌اندازی نشد — اپ هنوز در Developer Portal ثبت نشده', 'gold');
+            }, 1200);
+          }
         }
+      } else if (this.inPiBrowser) {
+        setTimeout(function () {
+          PiNama.toast('Pi SDK بارگذاری نشد — اتصال به sdk.minepi.com بررسی شود', 'gold');
+        }, 1200);
       }
     },
 

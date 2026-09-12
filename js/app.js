@@ -118,6 +118,7 @@
       el.pfUsd.textContent = '—';
       el.pfToman.textContent = '—';
       el.pfPl.hidden = true;
+      el.pfDayChange.hidden = true;
       return;
     }
     var usd = h * st.usd;
@@ -266,6 +267,7 @@
     }
     if (prev && prev.v > 0) {
       // تغییر ارزش = تغییر قیمت (فرض موجودی ثابت بین دو روز)
+      var todayV = h * st.usd;
       var pct = (todayV / prev.v - 1) * 100;
       el.pfDayChange.hidden = false;
       el.pfDayChange.className = 'pf-pl ' + (pct >= 0 ? 'gain' : 'loss');
@@ -281,11 +283,43 @@
       var first = data[0][1], last = data[data.length - 1][1];
       if (!isFinite(first) || first <= 0) return;
       var pct = (last / first - 1) * 100;
-      var chip = el.changeChips[days];
+      var chip = null;
+      for (var c = 0; c < el.changeChips.length; c++) {
+        if (parseInt(el.changeChips[c].getAttribute('data-days'), 10) === days) {
+          chip = el.changeChips[c];
+          break;
+        }
+      }
       if (!chip) return;
       chip.textContent = (days === 1 ? '۲۴ ساعت ' : days === 7 ? '۷ روز ' : '۳۰ روز ') + fmt.pct(pct);
       chip.classList.remove('up', 'down');
       chip.classList.add(pct >= 0 ? 'up' : 'down');
+
+      // موقعیت قیمت در بازه ۳۰ روزه — قلاب روزانه «چند مانده تا سقف/کف»
+      if (days === 30) {
+        var st = price.state;
+        if (st.usd == null || st.error) return;
+        var hi = -Infinity, lo = Infinity;
+        for (var i = 0; i < data.length; i++) {
+          if (data[i][1] > hi) hi = data[i][1];
+          if (data[i][1] < lo) lo = data[i][1];
+        }
+        if (hi <= lo || hi <= 0) return;
+        var toHi = (hi / st.usd - 1) * 100;
+        var aboveLo = (st.usd / lo - 1) * 100;
+        var msg;
+        if (toHi <= 0.5) {
+          msg = '📍 همین الان سقف ۳۰ روزه است — ' + fmt.usd(hi);
+        } else if (aboveLo <= 0.5) {
+          msg = '🩸 کف ۳۰ روزه است — ' + fmt.usd(lo);
+        } else if (toHi < aboveLo) {
+          msg = '🎯 ' + fmt.pct(-toHi).replace('-', '') + ' مانده تا سقف ۳۰ روزه';
+        } else {
+          msg = '🪂 ' + fmt.pct(aboveLo) + ' بالاتر از کف ۳۰ روزه';
+        }
+        el.rangeLine.textContent = msg;
+        el.rangeLine.hidden = false;
+      }
     }).catch(function () { /* چیپ بدون داده می‌ماند */ });
   }
 
@@ -303,7 +337,14 @@
     price.loadSeries(days).then(function (data) {
       if (currentDays !== days) return; // کاربر بازه دیگری انتخاب کرده
       chart.setData(data);
-      el.chartLoading.style.display = 'none';
+      // سری کهنه (آفلاین): رندر کن ولی صادقانه اعلام کن
+      var entry = S.get(K.SERIES + days, null);
+      if (entry && entry.fetchedAt && Date.now() - entry.fetchedAt > 60 * 60 * 1000) {
+        el.chartLoading.textContent = 'نمودار کهنه — اتصال برقرار نشد';
+        el.chartLoading.style.display = 'grid';
+      } else {
+        el.chartLoading.style.display = 'none';
+      }
     }).catch(function () {
       el.chartLoading.textContent = 'نمودار موقتاً در دسترس نیست — برای تلاش مجدد لمس کنید';
     });  }
@@ -352,7 +393,7 @@
 
   /* ═══════ ناوبری ═══════ */
 
-  function switchView(name) {
+  function switchView(name, fromPop) {
     var btns = el.navBtns;
     for (var i = 0; i < btns.length; i++) {
       var active = btns[i].getAttribute('data-view') === name;
@@ -363,6 +404,10 @@
     var views = el.views;
     for (var j = 0; j < views.length; j++) {
       views[j].classList.toggle('active', views[j].id === 'view-' + name);
+    }
+    // دکمه back اندروید باید به تب قبلی برگردد نه خروج از اپ
+    if (!fromPop && typeof history !== 'undefined' && history.pushState) {
+      try { history.pushState({ view: name }, ''); } catch (e) { /* حالت ویژه */ }
     }
     // تبلیغ بینابینی (داخلی throttled می‌شود و بی‌صدا رد می‌شود)
     ads.maybeShowInterstitial().catch(function () { });
@@ -377,6 +422,14 @@
         switchView(btn.getAttribute('data-view'));
       });
     });
+
+    // دکمه back اندروید → تب قبلی (اولین back = قیمت، بعد خروج)
+    if (typeof history !== 'undefined' && history.replaceState) {
+      try { history.replaceState({ view: 'price' }, ''); } catch (e) { /* noop */ }
+      window.addEventListener('popstate', function (e) {
+        switchView((e.state && e.state.view) || 'price', true);
+      });
+    }
 
     // تلاش مجدد نمودار با لمس پیام خطا
     el.chartLoading.addEventListener('click', function () {
@@ -456,14 +509,18 @@
 
     // هشدارها
     el.alertAdd.addEventListener('click', function () {
-      var item = alerts.add(el.alertDir.value, fmt.parse(el.alertPrice.value));
+      var item = alerts.add(el.alertDir.value, fmt.parse(el.alertPrice.value), price.state.usd);
       if (!item) {
         PiNama.toast('قیمت معتبری وارد کنید', 'red');
         return;
       }
       el.alertPrice.value = '';
       renderAlertsList();
-      PiNama.toast('هشدار ثبت شد ✓');
+      if (item.preMet) {
+        PiNama.toast('این قیمت الان رد شده — به‌عنوان فعال‌شده ثبت شد', 'gold');
+      } else {
+        PiNama.toast('هشدار ثبت شد ✓');
+      }
     });
     el.notifEnable.addEventListener('click', function () {
       if (!('Notification' in window)) {
@@ -488,10 +545,14 @@
         PiNama.toast('قیمت فعلی در دسترس نیست', 'red');
         return;
       }
-      var item = alerts.add(dir, st.usd * factor);
+      var item = alerts.add(dir, st.usd * factor, st.usd);
       if (item) {
         renderAlertsList();
-        PiNama.toast('هشدار روی ' + fmt.usd(item.price) + ' ثبت شد ✓', 'gold');
+        if (item.preMet) {
+          PiNama.toast('این قیمت الان رد شده — به‌عنوان فعال‌شده ثبت شد', 'gold');
+        } else {
+          PiNama.toast('هشدار روی ' + fmt.usd(item.price) + ' ثبت شد ✓', 'gold');
+        }
       }
     }
     el.quickPlus.addEventListener('click', function () { addQuickAlert('above', 1.05); });
@@ -689,6 +750,7 @@
       chartTooltip: $('chart-tooltip'),
       chartLoading: $('chart-loading'),
       changeChips: Array.prototype.slice.call(document.querySelectorAll('.change-chips .chip')),
+      rangeLine: $('range-line'),
       navBtns: Array.prototype.slice.call(document.querySelectorAll('.nav-btn')),
       tfBtns: Array.prototype.slice.call(document.querySelectorAll('#tf-selector .seg-btn')),
       calcDirBtns: Array.prototype.slice.call(document.querySelectorAll('#calc-dir .seg-btn')),

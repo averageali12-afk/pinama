@@ -72,16 +72,20 @@ global.localStorage = {
 };
 
 /* fetch stub: gate ticker + candles + ramzinex موفق؛ بقیه fail */
+/* سری کندل: [ts, quote, open, high, low, close, vol, complete] — بازه بالا و پایین واضح */
+const CANDLE_ROWS = [
+  ['1788500000', '1', '0.0920', '0.0990', '0.0910', '0.0990', '1', 'true'],
+  ['1788600000', '1', '0.0990', '0.1000', '0.0980', '0.1000', '1', 'true'],
+  ['1788700000', '1', '0.1000', '0.1010', '0.0930', '0.0930', '1', 'true'],
+  ['1788800000', '1', '0.0930', '0.0960', '0.0925', '0.0955', '1', 'true']
+];
 global.fetch = function (url) {
   url = String(url);
   if (url.includes('gateio') && url.includes('tickers')) {
     return Promise.resolve({ ok: true, json: () => Promise.resolve([{ last: '0.0955', change_percentage: '-1.2', high_24h: '0.097', low_24h: '0.093', base_volume: '7000000' }]) });
   }
   if (url.includes('gateio') && url.includes('candlesticks')) {
-    return Promise.resolve({ ok: true, json: () => Promise.resolve([
-      ['1788552000', '1', '0.0940', '0.095', '0.093', '0.0941', '1', 'true'],
-      ['1788566400', '1', '0.0941', '0.096', '0.094', '0.0948', '1', 'true']
-    ]) });
+    return Promise.resolve({ ok: true, json: () => Promise.resolve(CANDLE_ROWS) });
   }
   if (url.includes('ramzinex')) {
     return Promise.resolve({ ok: true, json: () => Promise.resolve({ data: { sell: 2358000, buy: 2354000 } }) });
@@ -152,6 +156,12 @@ function t(name, cond, extra) {
   else { failed++; console.log('  ✗ ' + name + (extra ? ' → ' + extra : '')); }
 }
 
+/* seed رگرسیون: pfHistory با رکورد دیروز (مسیر بحرانی todayV که قبلاً می‌شکست) */
+(function seedYesterday() {
+  const y = new Date(Date.now() - 86400000).toLocaleDateString('en-CA');
+  memStore['pinama.v2.pfHistory'] = JSON.stringify([{ d: y, v: 15 * 0.0900 }]);
+})();
+
 /* اجرای DOMContentLoaded */
 (listeners.DOMContentLoaded || []).forEach(function (fn) {
   try { fn(); } catch (e) { console.error('STARTUP CRASH:', e.message, '\n', e.stack.split('\n')[1]); failed++; }
@@ -174,7 +184,9 @@ setTimeout(function () {
     t('version rendered', String(getEl('app-version').textContent).indexOf('1.1.0') !== -1, 'got "' + getEl('app-version').textContent + '"');
     t('streak starts at 1 (not shown)', PiNama.storage.get('streak', 0) === 1 && getEl('streak-line').textContent === '', 'streak=' + PiNama.storage.get('streak', 0));
     t('live title set', String(document.title).indexOf('$0.0955') !== -1, 'got "' + document.title + '"');
-    t('day change snapshot exists', PiNama.storage.get('pfHistory', []).length === 1, 'len=' + PiNama.storage.get('pfHistory', []).length);
+    t('day change snapshot exists', PiNama.storage.get('pfHistory', []).length === 2, 'len=' + PiNama.storage.get('pfHistory', []).length);
+    t('«از دیروز» renders (todayV fix)', String(getEl('pf-day-value').textContent).indexOf('از دیروز') !== -1, 'got "' + getEl('pf-day-value').textContent + '"');
+    t('30d range line renders', getEl('range-line').textContent.length > 3, 'got "' + getEl('range-line').textContent + '"');
 
     /* دکمه هشدار سریع +۵٪ */
     try {

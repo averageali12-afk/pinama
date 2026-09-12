@@ -71,7 +71,12 @@
 
   function emit() {
     listeners.forEach(function (fn) {
-      try { fn(state); } catch (e) { /* یک شنونده نباید بقیه را بشکند */ }
+      try { fn(state); } catch (e) {
+        // یک شنونده نباید بقیه را بشکند — ولی بی‌صدا هم قورت نده
+        if (typeof console !== 'undefined' && console.warn) {
+          console.warn('[PiNama] listener error:', e && e.message);
+        }
+      }
     });
   }
 
@@ -218,6 +223,15 @@
         seriesCache[key] = entry;
         S.set(C.KEYS.SERIES + key, entry);
         return entry.data;
+      })
+      .catch(function () {
+        // آفلاین: سری کهنه localStorage بهتر از هیچ است — با برچسب «کهنه» نمایش داده می‌شود
+        var stale = S.get(C.KEYS.SERIES + key, null);
+        if (stale && stale.data && stale.data.length > 1) {
+          seriesCache[key] = stale;
+          return stale.data;
+        }
+        throw new Error('no-series-offline');
       })
       .finally(function () {
         delete seriesInflight[key];

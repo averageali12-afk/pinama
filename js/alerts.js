@@ -17,17 +17,32 @@
       S.set(K.ALERTS, this.list);
     },
 
-    /** خروجی: هشدارِ اضافه‌شده یا null (مقدار نامعتبر) */
-    add: function (dir, price) {
+    /** خروجی: هشدارِ اضافه‌شده یا null (مقدار نامعتبر)
+     *  - قیمت از قبل رد شده → فوراً «فعال‌شده» ثبت می‌شود (هشدار کاذب نمی‌سازد)
+     *  - تکراری (جهت و قیمت یکسان، هنوز فعال‌نشده) → همان مورد قبلی برگردانده می‌شود */
+    add: function (dir, price, currentUsd) {
       var p = parseFloat(price);
       if (!isFinite(p) || p <= 0) return null;
       if (dir !== 'above' && dir !== 'below') return null;
+
+      // dedupe: اپسایلون نسبی کوچک
+      for (var i = 0; i < this.list.length; i++) {
+        var ex = this.list[i];
+        if (ex.dir === dir && !ex.triggeredAt && Math.abs(ex.price - p) / p < 0.001) {
+          return ex;
+        }
+      }
+
+      var preMet = isFinite(currentUsd) && currentUsd > 0 &&
+        ((dir === 'above' && currentUsd >= p) || (dir === 'below' && currentUsd <= p));
+
       var item = {
         id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
         dir: dir,
         price: p,
         createdAt: Date.now(),
-        triggeredAt: null
+        triggeredAt: preMet ? Date.now() : null,
+        preMet: !!preMet
       };
       this.list.unshift(item);
       this.save();
