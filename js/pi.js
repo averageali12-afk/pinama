@@ -14,7 +14,7 @@
       this.user = S.get(K.USER, null);
       if (window.Pi && typeof window.Pi.init === 'function') {
         try {
-          window.Pi.init({ version: '2.0' });
+          window.Pi.init({ version: PiNama.config.SDK_VERSION || '2.0' });
           this.sdkReady = true;
         } catch (e) {
           this.sdkReady = false;

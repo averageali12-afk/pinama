@@ -93,6 +93,9 @@ global.fetch = function (url) {
 const listeners = {};
 global.document = {
   getElementById: getEl,
+  _title: '',
+  get title() { return this._title; },
+  set title(v) { this._title = v; },
   querySelectorAll: function (sel) {
     if (sel === '.nav-btn') return navIds.map(getEl);
     if (sel === '#tf-selector .seg-btn') return [getEl('tf-1'), getEl('tf-7'), getEl('tf-30')];
@@ -168,6 +171,8 @@ setTimeout(function () {
     t('no error banner', getEl('offline-banner').hidden === true);
     t('holdings prefilled 15', String(getEl('pf-holdings').value) === '15', 'got "' + getEl('pf-holdings').value + '"');
     t('version rendered', String(getEl('app-version').textContent).indexOf('1.1.0') !== -1, 'got "' + getEl('app-version').textContent + '"');
+    t('streak starts at 1 (hidden)', getEl('streak-line').hidden === true && PiNama.storage.get('streak', 0) === 1, 'streak=' + PiNama.storage.get('streak', 0));
+    t('live title set', String(document.title).indexOf('$0.0955') !== -1, 'got "' + document.title + '"');
 
     /* تعویض تب نباید crash کند */
     try {

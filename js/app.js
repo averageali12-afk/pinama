@@ -55,6 +55,11 @@
 
     el.priceUsd.textContent = fmt.usd(st.usd);
     if (chart && st.usd != null) chart.setReference(st.usd);
+
+    // قیمت زنده در عنوان تب — دیدنی در سوییچ اپ‌ها
+    if (st.usd != null && !st.error) {
+      document.title = 'پی‌نما | ' + fmt.usd(st.usd);
+    }
     el.priceToman.textContent = (st.usd != null && st.tomanRate)
       ? fmt.num(st.usd * st.tomanRate, 0) + ' تومان'
       : '—';
@@ -176,6 +181,29 @@
 
   function renderAlertsList() {
     alerts.render(el.alertList, price.state.usd);
+  }
+
+  /* ═══════ استریک روزانه ═══════ */
+
+  function updateStreak() {
+    try {
+      var today = new Date().toISOString().slice(0, 10);
+      var last = S.get(K.LAST_OPEN, null);
+      var streak = S.get(K.STREAK, 0);
+      if (last === today) {
+        // امروز قبلاً شمرده شده
+      } else {
+        var yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+        streak = (last === yesterday) ? streak + 1 : 1;
+        S.set(K.STREAK, streak);
+        S.set(K.LAST_OPEN, today);
+      }
+      // فقط از روز دوم نمایش داده می‌شود — مزاحم کاربر جدید نیست
+      if (streak >= 2) {
+        el.streakLine.textContent = '🔥 ' + fmt.num(streak, 0) + ' روز پشت‌سرهم اینجا بودی';
+        el.streakLine.hidden = false;
+      }
+    } catch (e) { /* تاریخ در دسترس نیست — بی‌خیال استریک */ }
   }
 
   /* ═══════ چیپ‌های بازه‌ای ═══════ */
@@ -516,6 +544,7 @@
       resetBtn: $('reset-btn'),
       appVersion: $('app-version'),
       installBtn: $('install-btn'),
+      streakLine: $('streak-line'),
       chartEl: $('chart'),
       chartTooltip: $('chart-tooltip'),
       chartLoading: $('chart-loading'),
@@ -557,6 +586,7 @@
     chart = new PiNama.Chart(el.chartEl, el.chartTooltip);
     loadChart(currentDays);
     updateAllChangeChips();
+    updateStreak();
 
     el.appVersion.textContent = 'نسخه ' + C.VERSION + ' — سپتامبر ۲۰۲۶';
 
