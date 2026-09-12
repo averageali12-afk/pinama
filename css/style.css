@@ -235,6 +235,14 @@ body {
   margin: 2px 0 0;
 }
 
+/* هشدارهای سریع */
+.quick-alerts {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.quick-alerts .btn { flex: 1; }
+
 .price-meta {
   display: flex;
   align-items: center;

@@ -59,6 +59,7 @@
     source: null,
     fetchedAt: null,
     error: false,       // آخرین دریافت کامل شکست خورد
+    hydrating: false,   // در حال نمایش کش اولیه — بنر قطعی نباید نمایش داده شود
     tomanRate: null,    // نرخ فعلی
     tomanSource: null,  // 'auto' | 'manual' | 'fallback' | 'none'
     tomanAt: null
@@ -156,6 +157,7 @@
         state.source = snap.source;
         state.fetchedAt = Date.now();
         state.error = false;
+        state.hydrating = false;
         S.set(C.KEYS.LAST_PRICE, snap);
         emit();
         return state;
@@ -164,6 +166,7 @@
         // هر دو منبع شکست خوردند — snapshot ذخیره‌شده (اگر هست) را «کهنه» نشان بده
         var cached = S.get(C.KEYS.LAST_PRICE, null);
         state.error = true;
+        state.hydrating = false;
         if (cached && cached.usd) {
           state.usd = cached.usd;
           state.change24h = cached.change24h;
@@ -238,7 +241,7 @@
     return isFinite(v) && v >= C.TOMAN_MIN && v <= C.TOMAN_MAX;
   }
 
-  function fromWallex() {
+  function fromRamzinex() {
     // رمضینکس: usdt/irr، جفت ۱۱ — قیمت‌ها به ریال
     return fetchJson(C.RAMZINEX_USDTIRR).then(function (json) {
       var p = json && json.data;
@@ -266,7 +269,7 @@
       return Promise.resolve(state.tomanRate);
     }
 
-    return fromWallex()
+    return fromRamzinex()
       .catch(function () {
         return fetchJson(C.TJGU_URL).then(function (json) {
           var v = parseTomanFromTgju(json);
@@ -323,7 +326,8 @@
       state.marketCap = cached.marketCap;
       state.volume24h = cached.volume24h;
       state.source = cached.source + ' (کش)';
-      state.error = true; // تا رسیدن پاسخ زنده، وضعیت «کهنه» است
+      state.error = true;   // تا رسیدن پاسخ زنده، وضعیت «کهنه» است
+      state.hydrating = true; // ولی هنوز بنر قطعی نکش — شاید شبکه برمی‌گردد
     }
     var rateCached = S.get(C.KEYS.RATE_AUTO, null);
     var rateManual = S.get(C.KEYS.RATE_MANUAL, null);

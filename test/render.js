@@ -102,6 +102,7 @@ global.document = {
     if (sel === '#calc-dir .seg-btn') return [getEl('cd-1'), getEl('cd-2')];
     if (sel === '#rate-mode .seg-btn') return [getEl('rm-1'), getEl('rm-2')];
     if (sel === '.change-chips .chip') return [getEl('chip-1'), getEl('chip-7'), getEl('chip-30')];
+  if (sel === '.quick-alerts .btn') return [getEl('quick-plus'), getEl('quick-minus')];
     if (sel === '.view') return ['price', 'portfolio', 'alerts', 'settings'].map(function (v) { return getEl('view-' + v); });
     return [];
   },
@@ -173,6 +174,14 @@ setTimeout(function () {
     t('version rendered', String(getEl('app-version').textContent).indexOf('1.1.0') !== -1, 'got "' + getEl('app-version').textContent + '"');
     t('streak starts at 1 (not shown)', PiNama.storage.get('streak', 0) === 1 && getEl('streak-line').textContent === '', 'streak=' + PiNama.storage.get('streak', 0));
     t('live title set', String(document.title).indexOf('$0.0955') !== -1, 'got "' + document.title + '"');
+    t('day change snapshot exists', PiNama.storage.get('pfHistory', []).length === 1, 'len=' + PiNama.storage.get('pfHistory', []).length);
+
+    /* دکمه هشدار سریع +۵٪ */
+    try {
+      getEl('quick-plus').listeners.click.forEach(function (fn) { fn(); });
+      t('quick +5% alert armed', PiNama.alerts.list.some(function (a) { return Math.abs(a.price - 0.0955 * 1.05) < 1e-9; }));
+      getEl('nav-alerts').listeners.click.forEach(function (fn) { fn(); });
+    } catch (e) { t('quick +5% alert armed', false, e.message); }
 
     /* تعویض تب نباید crash کند */
     try {

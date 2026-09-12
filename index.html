@@ -139,6 +139,10 @@
           <small>سود / زیان</small>
           <b id="pf-pl-value">—</b>
         </div>
+        <div class="pf-pl" id="pf-day-change" hidden>
+          <small>ارزش پرتفوی</small>
+          <b id="pf-day-value">—</b>
+        </div>
         <button class="btn btn-ghost btn-sm" id="pf-share" type="button">اشتراک وضعیت من 📊</button>
         <p class="hint">داده‌ها فقط روی همین دستگاه ذخیره می‌شوند.</p>
       </div>
@@ -160,6 +164,10 @@
           </select>
           <input type="number" id="alert-price" inputmode="decimal" min="0" step="any" placeholder="0.10" dir="ltr" />
           <button class="btn btn-primary" id="alert-add" type="button">افزودن</button>
+        </div>
+        <div class="quick-alerts">
+          <button class="btn btn-ghost btn-sm" id="quick-plus" type="button">+۵٪ بالاتر از الان</button>
+          <button class="btn btn-ghost btn-sm" id="quick-minus" type="button">−۵٪ پایین‌تر از الان</button>
         </div>
         <button class="btn btn-ghost btn-sm" id="notif-enable" type="button">
           فعال‌سازی نوتیفیکیشن مرورگر

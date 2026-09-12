@@ -65,19 +65,14 @@ self.addEventListener('fetch', function (event) {
   /* فقط GET */
   if (req.method !== 'GET') return;
 
-  /* APIهای قیمت/نرخ: network-first (داده تازه مهم‌تر از آفلاین)؛ در قطعی، آخرین پاسخ کش‌شده */
-  const isApi = /api\.coingecko\.com|okx\.com|gateio\.ws|wallex\.ir|tgju\.org/.test(url.hostname);
+  /* APIهای قیمت/نرخ: فقط network — پاسخ کش‌شده نباید به‌عنوان «زنده» جا بزند.
+   * نمایش آفلاین خودِ اپ با snapshot ذخیره‌شده و برچسب «کش» مدیریت می‌شود. */
+  const isApi = /api\.coingecko\.com|okx\.com|gateio\.ws|ramzinex\.com|wallex\.ir|tgju\.org/.test(url.hostname);
   if (isApi) {
     event.respondWith(
-      fetch(req).then(function (res) {
-        const copy = res.clone();
-        caches.open(CACHE).then(function (c) { c.put(req, copy); });
-        return res;
-      }).catch(function () {
-        return caches.match(req).then(function (hit) {
-          return hit || new Response(JSON.stringify({ offline: true }),
-            { status: 503, headers: { 'Content-Type': 'application/json' } });
-        });
+      fetch(req).catch(function () {
+        return new Response(JSON.stringify({ offline: true }),
+          { status: 503, headers: { 'Content-Type': 'application/json' } });
       })
     );
     return;

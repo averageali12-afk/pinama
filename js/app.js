@@ -76,7 +76,7 @@
 
     el.liveDot.className = 'live-dot ' +
       (st.error ? (st.usd != null ? 'stale' : 'err') : 'ok');
-    el.offlineBanner.hidden = !st.error;
+    el.offlineBanner.hidden = !st.error || st.hydrating;
 
     el.statHigh.textContent = fmt.usd(st.high24h);
     el.statLow.textContent = fmt.usd(st.low24h);
@@ -210,18 +210,31 @@
     });
   }
 
-  /* ═══════ استریک روزانه ═══════ */
+  /* ═══════ استریک روزانه و اسنپ‌شات پرتفوی (با تاریخ محلی) ═══════ */
+
+  function localDayKey() {
+    try {
+      return new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD محلی
+    } catch (e) {
+      return new Date().toISOString().slice(0, 10);
+    }
+  }
+
+  function localYesterdayKey() {
+    try {
+      return new Date(Date.now() - 86400000).toLocaleDateString('en-CA');
+    } catch (e) {
+      return new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    }
+  }
 
   function updateStreak() {
     try {
-      var today = new Date().toISOString().slice(0, 10);
+      var today = localDayKey();
       var last = S.get(K.LAST_OPEN, null);
       var streak = S.get(K.STREAK, 0);
-      if (last === today) {
-        // امروز قبلاً شمرده شده
-      } else {
-        var yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-        streak = (last === yesterday) ? streak + 1 : 1;
+      if (last !== today) {
+        streak = (last === localYesterdayKey()) ? streak + 1 : 1;
         S.set(K.STREAK, streak);
         S.set(K.LAST_OPEN, today);
       }
@@ -231,6 +244,33 @@
         el.streakLine.hidden = false;
       }
     } catch (e) { /* تاریخ در دسترس نیست — بی‌خیال استریک */ }
+  }
+
+  /** یک‌بار در روز: ارزش فعلی پرتفوی را ثبت کن و تغییر نسبت به دیروز را برگردان */
+  function snapshotPortfolio() {
+    var st = price.state;
+    if (st.error || st.usd == null) return;
+    var h = fmt.parse(el.pfHoldings.value);
+    if (!isFinite(h) || h <= 0) return;
+    var today = localDayKey();
+    var hist = S.get(K.PF_HISTORY, []);
+    if (!Array.isArray(hist)) hist = [];
+    if (!hist.length || hist[0].d !== today) {
+      S.push(K.PF_HISTORY, { d: today, v: h * st.usd }, 60);
+      hist = S.get(K.PF_HISTORY, []);
+    }
+    // نزدیک‌ترین رکورد قبل از امروز
+    var prev = null;
+    for (var i = 0; i < hist.length; i++) {
+      if (hist[i].d !== today) { prev = hist[i]; break; }
+    }
+    if (prev && prev.v > 0) {
+      // تغییر ارزش = تغییر قیمت (فرض موجودی ثابت بین دو روز)
+      var pct = (todayV / prev.v - 1) * 100;
+      el.pfDayChange.hidden = false;
+      el.pfDayChange.className = 'pf-pl ' + (pct >= 0 ? 'gain' : 'loss');
+      el.pfDayValue.textContent = (pct >= 0 ? '▲ ' : '▼ ') + fmt.pct(pct) + ' از دیروز';
+    }
   }
 
   /* ═══════ چیپ‌های بازه‌ای ═══════ */
@@ -270,11 +310,17 @@
 
   /* ═══════ هشدارها ═══════ */
 
-  function notify(body) {
+  function notify(body, tag) {
     if (!('Notification' in window) || Notification.permission !== 'granted') return;
-    try {
-      new Notification('پی‌نما', { body: body, tag: 'pinama-alert' });
-    } catch (e) { /* بعضی WebView ها اجازه نمی‌دهند */ }
+    var opts = { body: body, tag: tag || 'pinama-alert', icon: 'icons/icon-192.png' };
+    // در PWA نصب‌شده سازنده Notification کار نمی‌کند — از registration استفاده کن
+    if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+      navigator.serviceWorker.ready.then(function (reg) {
+        reg.showNotification('پی‌نما', opts).catch(function () { });
+      }).catch(function () { });
+    } else {
+      try { new Notification('پی‌نما', opts); } catch (e) { /* بعضی WebView ها اجازه نمی‌دهند */ }
+    }
   }
 
   function checkAlerts(usd) {
@@ -285,8 +331,8 @@
     fired.forEach(function (a) {
       var msg = '🎯 Pi ' + (a.dir === 'above' ? 'رسید بالای' : 'افتاد زیر') + ' ' + fmt.usd(a.price);
       PiNama.toast(msg, 'gold');
-      notify(msg);
-      S.push(K.MISSED, { msg: msg, at: Date.now(), id: a.id });
+      notify(msg, 'pinama-' + a.id);
+      S.push(K.MISSED, { msg: msg, at: Date.now(), id: a.id }, 30);
     });
     renderAlertsList();
     renderMissed();
@@ -298,7 +344,10 @@
     renderPortfolio();
     renderRate();
     checkAlerts(price.state.usd);
-    if (!price.state.error) updateAllChangeChips();
+    if (!price.state.error) {
+      updateAllChangeChips();
+      snapshotPortfolio();
+    }
   }
 
   /* ═══════ ناوبری ═══════ */
@@ -432,6 +481,22 @@
       renderMissed();
     });
 
+    // هشدارهای سریع ±۵٪ نسبت به قیمت فعلی
+    function addQuickAlert(dir, factor) {
+      var st = price.state;
+      if (st.usd == null || st.error) {
+        PiNama.toast('قیمت فعلی در دسترس نیست', 'red');
+        return;
+      }
+      var item = alerts.add(dir, st.usd * factor);
+      if (item) {
+        renderAlertsList();
+        PiNama.toast('هشدار روی ' + fmt.usd(item.price) + ' ثبت شد ✓', 'gold');
+      }
+    }
+    el.quickPlus.addEventListener('click', function () { addQuickAlert('above', 1.05); });
+    el.quickMinus.addEventListener('click', function () { addQuickAlert('below', 0.95); });
+
     // حساب
     el.authBtn.addEventListener('click', function () {
       if (pi.user) {
@@ -508,17 +573,30 @@
       PiNama.toast('پی‌نما روی گوشی نصب شد 🎉', 'gold');
     });
 
-    // ریست
+    // ریست — تأیید دو مرحله‌ای (دیالوگ‌های native در WebView ناپایدارند)
+    var resetArmed = null;
     el.resetBtn.addEventListener('click', function () {
-      if (window.confirm('همه داده‌های پی‌نما روی این دستگاه پاک شود؟')) {
+      if (resetArmed) {
+        clearTimeout(resetArmed);
+        resetArmed = null;
+        el.resetBtn.textContent = 'پاک‌کردن همه داده‌ها';
         S.clearAll();
         location.reload();
+        return;
       }
+      el.resetBtn.textContent = 'مطمئنی؟ دوباره بزن';
+      resetArmed = setTimeout(function () {
+        resetArmed = null;
+        el.resetBtn.textContent = 'پاک‌کردن همه داده‌ها';
+      }, 3000);
     });
 
-    // تازگی داده هنگام بازگشت به تب
+    // تازگی داده هنگام بازگشت به اپ
     document.addEventListener('visibilitychange', function () {
-      if (!document.hidden) price.refresh();
+      if (!document.hidden) {
+        price.refresh();
+        price.refreshTomanRate();
+      }
     });
 
     // کشیدن به پایین برای تازه‌سازی (لمسی، در بالای صفحه)
@@ -581,11 +659,15 @@
       pfToman: $('pf-toman'),
       pfPl: $('pf-pl'),
       pfPlValue: $('pf-pl-value'),
+      pfDayChange: $('pf-day-change'),
+      pfDayValue: $('pf-day-value'),
       pfShare: $('pf-share'),
       alertDir: $('alert-dir'),
       alertPrice: $('alert-price'),
       alertAdd: $('alert-add'),
       notifEnable: $('notif-enable'),
+      quickPlus: $('quick-plus'),
+      quickMinus: $('quick-minus'),
       alertList: $('alert-list'),
       alertHint: $('alert-hint'),
       missedCard: $('missed-card'),

@@ -54,6 +54,7 @@ PiNama.config = {
     LAST_OPEN: 'lastOpen',
     STREAK: 'streak',
     MISSED: 'missedAlerts',
+    PF_HISTORY: 'pfHistory',
     CALC_DIR: 'calcDir',
     CALC_INPUT: 'calcInput'
   }
