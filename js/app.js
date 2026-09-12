@@ -183,6 +183,33 @@
     alerts.render(el.alertList, price.state.usd);
   }
 
+  /* ═══════ هشدارهای ازدست‌رفته (وقتی اپ باز نبوده) ═══════ */
+
+  function renderMissed() {
+    var missed = S.get(K.MISSED, []);
+    if (!Array.isArray(missed) || !missed.length) {
+      el.missedCard.hidden = true;
+      return;
+    }
+    el.missedCard.hidden = false;
+    el.missedList.textContent = '';
+    missed.slice(0, 5).forEach(function (m) {
+      var li = document.createElement('li');
+      li.className = 'alert-item done';
+      var span = document.createElement('span');
+      span.textContent = m.msg;
+      var spacer = document.createElement('span');
+      spacer.className = 'spacer';
+      var when = document.createElement('small');
+      when.className = 'alert-status';
+      when.textContent = fmt.clock.format(new Date(m.at));
+      li.appendChild(span);
+      li.appendChild(spacer);
+      li.appendChild(when);
+      el.missedList.appendChild(li);
+    });
+  }
+
   /* ═══════ استریک روزانه ═══════ */
 
   function updateStreak() {
@@ -259,8 +286,10 @@
       var msg = '🎯 Pi ' + (a.dir === 'above' ? 'رسید بالای' : 'افتاد زیر') + ' ' + fmt.usd(a.price);
       PiNama.toast(msg, 'gold');
       notify(msg);
+      S.push(K.MISSED, { msg: msg, at: Date.now(), id: a.id });
     });
     renderAlertsList();
+    renderMissed();
   }
 
   function onPriceChange() {
@@ -346,7 +375,27 @@
       renderCalc();
     });
 
-    // پرتفوی
+    // پرتفوی: دکمه اشتراک وضعیت
+    el.pfShare.addEventListener('click', function () {
+      var st = price.state;
+      var h = fmt.parse(el.pfHoldings.value);
+      if (!isFinite(h) || h <= 0 || st.usd == null) {
+        PiNama.toast('اول موجودی را وارد کن', 'red');
+        return;
+      }
+      var usd = h * st.usd;
+      var text = '💰 ' + fmt.num(h, 2) + ' PI ≈ ' + fmt.usd(usd, 2) +
+        (st.tomanRate ? ' (' + fmt.num(usd * st.tomanRate, 0) + ' تومان)' : '') +
+        '\nبا اپ پی‌نما دنبالش می‌کنم 📈';
+      if (navigator.share) {
+        navigator.share({ text: text }).catch(function () { });
+      } else if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(function () {
+          PiNama.toast('متن وضعیت کپی شد 📋', 'gold');
+        }).catch(function () { });
+      }
+    });
+
     el.pfHoldings.addEventListener('input', function () {
       S.set(K.HOLDINGS, fmt.parse(el.pfHoldings.value) || 0);
       renderPortfolio();
@@ -376,6 +425,11 @@
         updateNotifUi(p);
         PiNama.toast(p === 'granted' ? 'نوتیفیکیشن فعال شد ✓' : 'نوتیفیکیشن فعال نشد', p === 'granted' ? 'gold' : 'red');
       });
+    });
+
+    el.missedClear.addEventListener('click', function () {
+      S.remove(K.MISSED);
+      renderMissed();
     });
 
     // حساب
@@ -527,12 +581,16 @@
       pfToman: $('pf-toman'),
       pfPl: $('pf-pl'),
       pfPlValue: $('pf-pl-value'),
+      pfShare: $('pf-share'),
       alertDir: $('alert-dir'),
       alertPrice: $('alert-price'),
       alertAdd: $('alert-add'),
       notifEnable: $('notif-enable'),
       alertList: $('alert-list'),
       alertHint: $('alert-hint'),
+      missedCard: $('missed-card'),
+      missedList: $('missed-list'),
+      missedClear: $('missed-clear'),
       accountStatus: $('account-status'),
       logoutBtn: $('logout-btn'),
       rateManualField: $('rate-manual-field'),
@@ -597,6 +655,7 @@
     renderRate();
     renderAccount();
     renderAlertsList();
+    renderMissed();
 
     el.envBadge.hidden = pi.inPiBrowser;
     if ('Notification' in window) updateNotifUi(Notification.permission);

@@ -53,6 +53,7 @@ PiNama.config = {
     LAST_INTERSTITIAL: 'lastInterstitial',
     LAST_OPEN: 'lastOpen',
     STREAK: 'streak',
+    MISSED: 'missedAlerts',
     CALC_DIR: 'calcDir',
     CALC_INPUT: 'calcInput'
   }

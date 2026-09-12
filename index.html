@@ -139,12 +139,18 @@
           <small>سود / زیان</small>
           <b id="pf-pl-value">—</b>
         </div>
+        <button class="btn btn-ghost btn-sm" id="pf-share" type="button">اشتراک وضعیت من 📊</button>
         <p class="hint">داده‌ها فقط روی همین دستگاه ذخیره می‌شوند.</p>
       </div>
     </section>
 
     <!-- ═══════════ تب: هشدارها ═══════════ -->
     <section id="view-alerts" class="view" aria-label="هشدارها">
+      <div class="card" id="missed-card" hidden>
+        <h3 class="card-title">آنچه از دست دادی</h3>
+        <ul class="alert-list" id="missed-list"></ul>
+        <button class="btn btn-ghost btn-sm" id="missed-clear" type="button">پاک‌کردن</button>
+      </div>
       <div class="card">
         <h3 class="card-title">هشدار قیمت</h3>
         <div class="alert-form">

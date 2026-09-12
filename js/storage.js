@@ -43,6 +43,14 @@
     remove: function (key) {
       try { store.removeItem(PREFIX + key); } catch (e) { /* noop */ }
     },
+    /** افزودن به لیستی با سقف طول — قدیمی‌ها حذف می‌شوند */
+    push: function (key, item, cap) {
+      var list = this.get(key, []);
+      if (!Array.isArray(list)) list = [];
+      list.unshift(item);
+      if (cap && list.length > cap) list.length = cap;
+      this.set(key, list);
+    },
     clearAll: function () {
       try {
         var doomed = [];
