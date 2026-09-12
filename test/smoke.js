@@ -70,7 +70,12 @@ async function main() {
   t('pct positive', PiNama.fmt.pct(3.456) === '+3.46%');
   t('pct negative', PiNama.fmt.pct(-2.5) === '-2.50%');
   t('usd 4 digits', PiNama.fmt.usd(0.0955) === '$0.0955');
-  t('compact B', /^1\.0[67]B$/.test(PiNama.fmt.compactUsd(1.065e9)), 'got ' + PiNama.fmt.compactUsd(1.065e9));
+  t('compact B', /^\$1\.0[67]B$/.test(PiNama.fmt.compactUsd(1.065e9)), 'got ' + PiNama.fmt.compactUsd(1.065e9));
+  t('parse latin', PiNama.fmt.parse('15.5') === 15.5);
+  t('parse persian digits', PiNama.fmt.parse('۱۵٫۵') === 15.5, 'got ' + PiNama.fmt.parse('۱۵٫۵'));
+  t('parse arabic digits', PiNama.fmt.parse('٢٣٥٠٠٠') === 235000, 'got ' + PiNama.fmt.parse('٢٣٥٠٠٠'));
+  t('parse thousands sep', PiNama.fmt.parse('235,000') === 235000);
+  t('parse invalid → NaN', isNaN(PiNama.fmt.parse('abc')));
 
   /* ─── زنجیره نرخ تومان ─── */
   console.log('\n[toman-rate chain]');
@@ -139,7 +144,7 @@ async function main() {
   };
   let series = await PiNama.price.loadSeries(7);
   t('series from gate', series.length === 3, 'len ' + series.length);
-  t('series mapped (ts ms + open)', series[0][0] === 1788552000000 && Math.abs(series[0][1] - 0.09412) < 1e-9);
+  t('series mapped (ts ms + close)', series[0][0] === 1788552000000 && Math.abs(series[0][1] - 0.0941) < 1e-9);
   t('gate is first source', fetchLog.length === 1 && fetchLog[0].includes('gateio'), fetchLog.join(' '));
 
   // CoinGecko پشتیبان وقتی Gate قطع است

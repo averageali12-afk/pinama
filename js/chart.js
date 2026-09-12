@@ -31,7 +31,12 @@
     }
 
     canvas.addEventListener('pointermove', function (e) { self.onPointer(e); });
+    canvas.addEventListener('pointerdown', function (e) { self.onPointer(e); });
     canvas.addEventListener('pointerleave', function () { self.hideTooltip(); });
+    // لمس: با رهاکردن انگشت یا اسکرول، تولتیپ بمانَد نگیرد
+    canvas.addEventListener('pointerup', function () { self.hideTooltip(); });
+    canvas.addEventListener('pointercancel', function () { self.hideTooltip(); });
+    window.addEventListener('scroll', function () { self.hideTooltip(); }, { passive: true });
   }
 
   Chart.prototype.setData = function (series) {

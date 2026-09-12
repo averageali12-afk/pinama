@@ -7,6 +7,22 @@
 
   /* ─── قالب‌بندی اعداد ─── */
   PiNama.fmt = {
+    /** تبدیل ارقام فارسی/عربی به لاتین برای parseFloat (کیبورد فارسی) */
+    latinDigits: function (s) {
+      return String(s)
+        .replace(/[۰-۹]/g, function (d) { return String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d)); })
+        .replace(/[٠-٩]/g, function (d) { return String('٠١٢٣٤٥٦٧٨٩'.indexOf(d)); });
+    },
+    /** parseFloat مقاوم به ارقام فارسی، ممیز فارسی و جداکننده هزارگان */
+    parse: function (s) {
+      if (s == null) return NaN;
+      var v = parseFloat(
+        PiNama.fmt.latinDigits(String(s))
+          .replace(/٫/g, '.') // ممیز فارسی/عربی → نقطه
+          .replace(/,/g, '')  // جداکننده هزارگان
+      );
+      return isFinite(v) ? v : NaN;
+    },
     num: function (v, maxFrac) {
       if (v === null || v === undefined || isNaN(v)) return '—';
       return Number(v).toLocaleString('en-US', { maximumFractionDigits: maxFrac == null ? 2 : maxFrac });
@@ -170,7 +186,8 @@
       .then(function (rows) {
         if (!rows || rows.length < 2) throw new Error('empty');
         // کندل: [timestamp, quote_volume, open, high, low, close, base_volume, complete]
-        return rows.map(function (r) { return [r[0] * 1000, parseFloat(r[2])]; });
+        // close می‌گیریم تا آخرین نقطه ≈ قیمت فعلی باشد
+        return rows.map(function (r) { return [r[0] * 1000, parseFloat(r[5])]; });
       });
   }
 

@@ -64,7 +64,7 @@
   function renderCalc() {
     var dir = S.get(K.CALC_DIR, 'pi2usd');
     var st = price.state;
-    var raw = parseFloat(el.calcInput.value);
+    var raw = fmt.parse(el.calcInput.value);
 
     el.calcInputLabel.textContent = dir === 'pi2usd' ? 'مقدار Pi' : 'مقدار (تومان)';
 
@@ -88,8 +88,8 @@
 
   function renderPortfolio() {
     var st = price.state;
-    var h = parseFloat(el.pfHoldings.value);
-    var avg = parseFloat(el.pfAvg.value);
+    var h = fmt.parse(el.pfHoldings.value);
+    var avg = fmt.parse(el.pfAvg.value);
 
     if (!isFinite(h) || h <= 0 || st.usd == null) {
       el.pfUsd.textContent = '—';
@@ -172,7 +172,7 @@
       chart.setData(data);
       el.chartLoading.style.display = 'none';
     }).catch(function () {
-      el.chartLoading.textContent = 'نمودار موقتاً در دسترس نیست — بعداً تلاش کنید';
+      el.chartLoading.textContent = 'نمودار موقتاً در دسترس نیست — برای تلاش مجدد لمس کنید';
     });
   }
 
@@ -186,6 +186,8 @@
   }
 
   function checkAlerts(usd) {
+    // فقط با قیمت تازه؛ قیمت کش/کهنه نباید هشدار کاذب فعال کند
+    if (price.state.error) return;
     var fired = alerts.check(usd);
     if (!fired.length) return;
     fired.forEach(function (a) {
@@ -209,7 +211,10 @@
   function switchView(name) {
     var btns = el.navBtns;
     for (var i = 0; i < btns.length; i++) {
-      btns[i].classList.toggle('active', btns[i].getAttribute('data-view') === name);
+      var active = btns[i].getAttribute('data-view') === name;
+      btns[i].classList.toggle('active', active);
+      if (active) btns[i].setAttribute('aria-current', 'page');
+      else btns[i].removeAttribute('aria-current');
     }
     var views = el.views;
     for (var j = 0; j < views.length; j++) {
@@ -227,6 +232,18 @@
       btn.addEventListener('click', function () {
         switchView(btn.getAttribute('data-view'));
       });
+    });
+
+    // تلاش مجدد نمودار با لمس پیام خطا
+    el.chartLoading.addEventListener('click', function () {
+      if (el.chartLoading.style.display !== 'none') loadChart(currentDays);
+    });
+
+    // بنر آفلاین: لمس = تازه‌سازی فوری
+    el.offlineBanner.addEventListener('click', function () {
+      price.refresh();
+      price.refreshTomanRate();
+      PiNama.toast('در حال تازه‌سازی…');
     });
 
     // بازه نمودار
@@ -254,17 +271,17 @@
 
     // پرتفوی
     el.pfHoldings.addEventListener('input', function () {
-      S.set(K.HOLDINGS, parseFloat(el.pfHoldings.value) || 0);
+      S.set(K.HOLDINGS, fmt.parse(el.pfHoldings.value) || 0);
       renderPortfolio();
     });
     el.pfAvg.addEventListener('input', function () {
-      S.set(K.AVG_BUY, parseFloat(el.pfAvg.value) || 0);
+      S.set(K.AVG_BUY, fmt.parse(el.pfAvg.value) || 0);
       renderPortfolio();
     });
 
     // هشدارها
     el.alertAdd.addEventListener('click', function () {
-      var item = alerts.add(el.alertDir.value, el.alertPrice.value);
+      var item = alerts.add(el.alertDir.value, fmt.parse(el.alertPrice.value));
       if (!item) {
         PiNama.toast('قیمت معتبری وارد کنید', 'red');
         return;
@@ -315,7 +332,7 @@
       });
     });
     el.rateManual.addEventListener('input', function () {
-      var v = parseFloat(el.rateManual.value);
+      var v = fmt.parse(el.rateManual.value);
       if (isFinite(v) && v > 0) {
         price.setManualRate(v);
         renderRate();
@@ -353,6 +370,26 @@
     document.addEventListener('visibilitychange', function () {
       if (!document.hidden) price.refresh();
     });
+
+    // کشیدن به پایین برای تازه‌سازی (لمسی، در بالای صفحه)
+    var touchStartY = null;
+    document.addEventListener('touchstart', function (e) {
+      if (window.scrollY <= 0 && e.touches.length === 1) {
+        touchStartY = e.touches[0].clientY;
+      } else {
+        touchStartY = null;
+      }
+    }, { passive: true });
+    document.addEventListener('touchend', function (e) {
+      if (touchStartY == null) return;
+      var dy = e.changedTouches[0].clientY - touchStartY;
+      touchStartY = null;
+      if (dy > 90 && window.scrollY <= 0) {
+        price.refresh();
+        price.refreshTomanRate();
+        PiNama.toast('در حال تازه‌سازی قیمت…');
+      }
+    }, { passive: true });
   }
 
   function updateNotifUi(perm) {

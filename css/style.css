@@ -89,7 +89,7 @@ body {
   white-space: nowrap;
 }
 
-/* ─── بنر آفلاین ─── */
+/* ─── بنر آفلاین (قابل‌کلیک برای تازه‌سازی) ─── */
 .offline-banner {
   background: var(--red-soft);
   color: var(--red);
@@ -97,6 +97,9 @@ body {
   font-size: 12px;
   padding: 8px 16px;
   border-bottom: 1px solid rgba(248, 113, 113, 0.25);
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /* ─── چیدمان ─── */
@@ -257,7 +260,12 @@ body {
   place-items: center;
   font-size: 12px;
   color: var(--text-faint);
-  pointer-events: none;
+  pointer-events: auto;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  text-align: center;
+  padding: 10px;
 }
 
 .chart-tooltip {
@@ -558,4 +566,13 @@ a.brand { text-decoration: none; color: inherit; }
 @media (max-width: 360px) {
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .price-usd { font-size: 28px; }
+}
+
+/* ─── احترام به کاهش حرکت ─── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
