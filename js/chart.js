@@ -21,6 +21,7 @@
     this.tooltip = tooltipEl;
     this.series = null;      // [[ts, price], ...]
     this.geometry = null;    // برای تولتیپ
+    this.refPrice = null;    // خط مرجع قیمت لحظه‌ای
     this._rafPending = false;
 
     var self = this;
@@ -52,6 +53,12 @@
       self._rafPending = false;
       self.draw();
     });
+  };
+
+  Chart.prototype.setReference = function (usd) {
+    if (this.refPrice === usd) return;
+    this.refPrice = usd;
+    this.scheduleDraw();
   };
 
   Chart.prototype.draw = function () {
@@ -133,6 +140,20 @@
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
     ctx.stroke(linePath);
+
+    // خط مرجع قیمت لحظه‌ای (خط‌چین طلایی)
+    if (this.refPrice != null && isFinite(this.refPrice) && this.refPrice >= min && this.refPrice <= max) {
+      var ry = Y(this.refPrice);
+      ctx.save();
+      ctx.setLineDash([5, 4]);
+      ctx.strokeStyle = COLORS.gold;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(pad.left, ry);
+      ctx.lineTo(w - pad.right, ry);
+      ctx.stroke();
+      ctx.restore();
+    }
 
     // نقطه آخر (قیمت الان)
     var lastX = X(t1), lastY = Y(s[s.length - 1][1]);

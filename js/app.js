@@ -15,6 +15,7 @@
   var chart = null;
   var currentDays = 7;
   var toastRoot = null;
+  var deferredInstall = null;
 
   function $(id) { return document.getElementById(id); }
 
@@ -53,6 +54,7 @@
     if (st.usd != null && !st.error) lastRenderedUsd = st.usd;
 
     el.priceUsd.textContent = fmt.usd(st.usd);
+    if (chart && st.usd != null) chart.setReference(st.usd);
     el.priceToman.textContent = (st.usd != null && st.tomanRate)
       ? fmt.num(st.usd * st.tomanRate, 0) + ' تومان'
       : '—';
@@ -405,6 +407,25 @@
     // اشتراک‌گذاری
     el.shareBtn.addEventListener('click', function () { pi.share(); });
 
+    // نصب PWA
+    window.addEventListener('beforeinstallprompt', function (e) {
+      e.preventDefault();
+      deferredInstall = e;
+      el.installBtn.hidden = false;
+    });
+    el.installBtn.addEventListener('click', function () {
+      if (!deferredInstall) return;
+      deferredInstall.prompt();
+      deferredInstall.userChoice.then(function () {
+        deferredInstall = null;
+        el.installBtn.hidden = true;
+      }).catch(function () { });
+    });
+    window.addEventListener('appinstalled', function () {
+      el.installBtn.hidden = true;
+      PiNama.toast('پی‌نما روی گوشی نصب شد 🎉', 'gold');
+    });
+
     // ریست
     el.resetBtn.addEventListener('click', function () {
       if (window.confirm('همه داده‌های پی‌نما روی این دستگاه پاک شود؟')) {
@@ -494,6 +515,7 @@
       shareBtn: $('share-btn'),
       resetBtn: $('reset-btn'),
       appVersion: $('app-version'),
+      installBtn: $('install-btn'),
       chartEl: $('chart'),
       chartTooltip: $('chart-tooltip'),
       chartLoading: $('chart-loading'),
