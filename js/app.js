@@ -33,8 +33,24 @@
 
   /* ═══════ رندر ═══════ */
 
+  var lastRenderedUsd = null;
+  var flashTimer = null;
+
   function renderPrice() {
     var st = price.state;
+
+    // فلش سبز/قرمز هنگام تغییر قیمت
+    if (lastRenderedUsd != null && st.usd != null && st.usd !== lastRenderedUsd && !st.error) {
+      el.priceUsd.classList.remove('flash-up', 'flash-down');
+      // force reflow برای ری‌استارت انیمیشن
+      void el.priceUsd.offsetWidth;
+      el.priceUsd.classList.add(st.usd > lastRenderedUsd ? 'flash-up' : 'flash-down');
+      if (flashTimer) clearTimeout(flashTimer);
+      flashTimer = setTimeout(function () {
+        el.priceUsd.classList.remove('flash-up', 'flash-down');
+      }, 900);
+    }
+    if (st.usd != null && !st.error) lastRenderedUsd = st.usd;
 
     el.priceUsd.textContent = fmt.usd(st.usd);
     el.priceToman.textContent = (st.usd != null && st.tomanRate)
@@ -157,7 +173,27 @@
   }
 
   function renderAlertsList() {
-    alerts.render(el.alertList);
+    alerts.render(el.alertList, price.state.usd);
+  }
+
+  /* ═══════ چیپ‌های بازه‌ای ═══════ */
+
+  function updateChangeChip(days) {
+    price.loadSeries(days).then(function (data) {
+      if (!data || data.length < 2) return;
+      var first = data[0][1], last = data[data.length - 1][1];
+      if (!isFinite(first) || first <= 0) return;
+      var pct = (last / first - 1) * 100;
+      var chip = el.changeChips[days];
+      if (!chip) return;
+      chip.textContent = (days === 1 ? '۲۴ ساعت ' : days === 7 ? '۷ روز ' : '۳۰ روز ') + fmt.pct(pct);
+      chip.classList.remove('up', 'down');
+      chip.classList.add(pct >= 0 ? 'up' : 'down');
+    }).catch(function () { /* چیپ بدون داده می‌ماند */ });
+  }
+
+  function updateAllChangeChips() {
+    [1, 7, 30].forEach(updateChangeChip);
   }
 
   /* ═══════ نمودار ═══════ */
@@ -173,8 +209,7 @@
       el.chartLoading.style.display = 'none';
     }).catch(function () {
       el.chartLoading.textContent = 'نمودار موقتاً در دسترس نیست — برای تلاش مجدد لمس کنید';
-    });
-  }
+    });  }
 
   /* ═══════ هشدارها ═══════ */
 
@@ -204,6 +239,7 @@
     renderPortfolio();
     renderRate();
     checkAlerts(price.state.usd);
+    if (!price.state.error) updateAllChangeChips();
   }
 
   /* ═══════ ناوبری ═══════ */
@@ -252,6 +288,17 @@
         el.tfBtns.forEach(function (b) { b.classList.remove('active'); });
         btn.classList.add('active');
         loadChart(parseInt(btn.getAttribute('data-days'), 10));
+      });
+    });
+
+    // چیپ‌های بازه‌ای: کلیک = تعویض نمودار
+    el.changeChips.forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        var days = parseInt(chip.getAttribute('data-days'), 10);
+        el.tfBtns.forEach(function (b) {
+          b.classList.toggle('active', parseInt(b.getAttribute('data-days'), 10) === days);
+        });
+        loadChart(days);
       });
     });
 
@@ -446,9 +493,11 @@
       adStatus: $('ad-status'),
       shareBtn: $('share-btn'),
       resetBtn: $('reset-btn'),
+      appVersion: $('app-version'),
       chartEl: $('chart'),
       chartTooltip: $('chart-tooltip'),
       chartLoading: $('chart-loading'),
+      changeChips: Array.prototype.slice.call(document.querySelectorAll('.change-chips .chip')),
       navBtns: Array.prototype.slice.call(document.querySelectorAll('.nav-btn')),
       tfBtns: Array.prototype.slice.call(document.querySelectorAll('#tf-selector .seg-btn')),
       calcDirBtns: Array.prototype.slice.call(document.querySelectorAll('#calc-dir .seg-btn')),
@@ -485,6 +534,9 @@
 
     chart = new PiNama.Chart(el.chartEl, el.chartTooltip);
     loadChart(currentDays);
+    updateAllChangeChips();
+
+    el.appVersion.textContent = 'نسخه ' + C.VERSION + ' — سپتامبر ۲۰۲۶';
 
     wireEvents();
     renderPrice();

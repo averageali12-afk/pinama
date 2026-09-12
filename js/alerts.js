@@ -63,8 +63,8 @@
       return fired;
     },
 
-    /** ساخت لیست در DOM — بدون innerHTML برای جلوگیری از تزریق */
-    render: function (ul) {
+    /** ساخت لیست در DOM — بدون innerHTML برای جلوگیری از تزریق؛ currentUsd برای نمایش فاصله */
+    render: function (ul, currentUsd) {
       ul.textContent = '';
       var self = this;
 
@@ -92,7 +92,15 @@
 
         var status = document.createElement('span');
         status.className = 'alert-status';
-        status.textContent = a.triggeredAt ? 'فعال شد ✓' : 'در انتظار';
+        if (a.triggeredAt) {
+          status.textContent = 'فعال شد ✓';
+        } else if (isFinite(currentUsd) && currentUsd > 0) {
+          // فاصله تا هدف: مثبت = باید بالا برود، منفی = باید پایین بیاید
+          var away = (a.price / currentUsd - 1) * 100;
+          status.textContent = (away >= 0 ? '▲ ' : '▼ ') + Math.abs(away).toFixed(1) + '٪ مانده';
+        } else {
+          status.textContent = 'در انتظار';
+        }
 
         var spacer = document.createElement('span');
         spacer.className = 'spacer';

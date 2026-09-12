@@ -35,7 +35,10 @@ function stubEl(id) {
     removeAttribute: function (k) { delete this['attr_' + k]; },
     getAttribute: function (k) {
       if (k === 'data-view') return id.replace('nav-', '');
-      if (k === 'data-days') return '7';
+      if (k === 'data-days') {
+        var m = { 'tf-1': '1', 'tf-7': '7', 'tf-30': '30', 'chip-1': '1', 'chip-7': '7', 'chip-30': '30' };
+        return m[id] || '7';
+      }
       if (k === 'data-dir') return 'pi2usd';
       if (k === 'data-mode') return 'auto';
       return null;
@@ -95,6 +98,7 @@ global.document = {
     if (sel === '#tf-selector .seg-btn') return [getEl('tf-1'), getEl('tf-7'), getEl('tf-30')];
     if (sel === '#calc-dir .seg-btn') return [getEl('cd-1'), getEl('cd-2')];
     if (sel === '#rate-mode .seg-btn') return [getEl('rm-1'), getEl('rm-2')];
+    if (sel === '.change-chips .chip') return [getEl('chip-1'), getEl('chip-7'), getEl('chip-30')];
     if (sel === '.view') return ['price', 'portfolio', 'alerts', 'settings'].map(function (v) { return getEl('view-' + v); });
     return [];
   },
@@ -147,22 +151,34 @@ function t(name, cond, extra) {
 });
 
 setTimeout(function () {
-  const st = PiNama.price.state;
-  t('startup without crash', true);
-  t('price populated from gate', st.usd === 0.0955, 'got ' + st.usd);
-  t('toman from ramzinex', st.tomanRate === 235800, 'got ' + st.tomanRate);
-  t('price usd rendered', getEl('price-usd').textContent === '$0.0955', 'got "' + getEl('price-usd').textContent + '"');
-  t('toman rendered', String(getEl('price-toman').textContent).includes('22,519'), 'got "' + getEl('price-toman').textContent + '"');
-  t('source label gate', String(getEl('price-source').textContent).includes('Gate'), 'got "' + getEl('price-source').textContent + '"');
-  t('no error banner', getEl('offline-banner').hidden === true);
-  t('holdings prefilled 15', String(getEl('pf-holdings').value) === '15', 'got "' + getEl('pf-holdings').value + '"');
+  setTimeout(function () {
+    const chip7 = getEl('chip-7');
+    t('7d chip updated with pct', String(chip7.textContent).indexOf('%') !== -1 || String(chip7.textContent).indexOf('٪') !== -1, 'got "' + chip7.textContent + '"');
 
-  /* تعویض تب نباید crash کند */
-  try {
-    getEl('nav-portfolio').listeners.click.forEach(function (fn) { fn(); });
-    t('tab switch without crash', true);
-  } catch (e) { t('tab switch without crash', false, e.message); }
+    const st = PiNama.price.state;
+    t('startup without crash', true);
+    t('price populated from gate', st.usd === 0.0955, 'got ' + st.usd);
+    t('toman from ramzinex', st.tomanRate === 235800, 'got ' + st.tomanRate);
+    t('price usd rendered', getEl('price-usd').textContent === '$0.0955', 'got "' + getEl('price-usd').textContent + '"');
+    t('toman rendered', String(getEl('price-toman').textContent).includes('22,519'), 'got "' + getEl('price-toman').textContent + '"');
+    t('source label gate', String(getEl('price-source').textContent).includes('Gate'), 'got "' + getEl('price-source').textContent + '"');
+    t('no error banner', getEl('offline-banner').hidden === true);
+    t('holdings prefilled 15', String(getEl('pf-holdings').value) === '15', 'got "' + getEl('pf-holdings').value + '"');
+    t('version rendered', String(getEl('app-version').textContent).indexOf('1.1.0') !== -1, 'got "' + getEl('app-version').textContent + '"');
 
-  console.log(failed === 0 ? '\n✅ راه‌اندازی کامل اپ بدون خطا' : '\n❌ ' + failed + ' مشکل در راه‌اندازی');
-  process.exit(failed === 0 ? 0 : 1);
-}, 300);
+    /* تعویض تب نباید crash کند */
+    try {
+      getEl('nav-portfolio').listeners.click.forEach(function (fn) { fn(); });
+      t('tab switch without crash', true);
+    } catch (e) { t('tab switch without crash', false, e.message); }
+
+    /* کلیک چیپ نباید crash کند */
+    try {
+      getEl('chip-30').listeners.click.forEach(function (fn) { fn(); });
+      t('chip click without crash', true);
+    } catch (e) { t('chip click without crash', false, e.message); }
+
+    console.log(failed === 0 ? '\n✅ راه‌اندازی کامل اپ بدون خطا' : '\n❌ ' + failed + ' مشکل در راه‌اندازی');
+    process.exit(failed === 0 ? 0 : 1);
+  }, 400);
+}, 100);

@@ -201,6 +201,32 @@ body {
   margin-top: 2px;
 }
 
+/* فلش تغییر قیمت */
+.price-usd { transition: color 0.5s ease; }
+.price-usd.flash-up { color: var(--green); transition: none; }
+.price-usd.flash-down { color: var(--red); transition: none; }
+
+/* چیپ‌های بازه‌ای */
+.change-chips { display: flex; gap: 6px; margin: 8px 0 4px; }
+
+.chip {
+  flex: 1;
+  border: 1px solid var(--border);
+  background: var(--card-2);
+  color: var(--text-dim);
+  font-family: var(--font);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 4px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  direction: ltr;
+}
+.chip.up { color: var(--green); border-color: rgba(52, 211, 153, 0.4); background: var(--green-soft); }
+.chip.down { color: var(--red); border-color: rgba(248, 113, 113, 0.4); background: var(--red-soft); }
+.chip:active { transform: scale(0.97); }
+
 .price-meta {
   display: flex;
   align-items: center;

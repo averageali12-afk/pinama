@@ -2,6 +2,7 @@
 window.PiNama = window.PiNama || {};
 
 PiNama.config = {
+  VERSION: '1.1.0',
   // منابع قیمت — به ترتیب امتحان می‌شوند (اولین موفق برنده)
   GATE_TICKER: 'https://api.gateio.ws/api/v4/spot/tickers?currency_pair=PI_USDT',
   GATE_CANDLES: 'https://api.gateio.ws/api/v4/spot/candlesticks?currency_pair=PI_USDT&interval=',
