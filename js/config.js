@@ -2,7 +2,7 @@
 window.PiNama = window.PiNama || {};
 
 PiNama.config = {
-  VERSION: '1.1.0',
+  VERSION: '1.2.0',
   SDK_VERSION: '2.0',
   // منابع قیمت — به ترتیب امتحان می‌شوند (اولین موفق برنده)
   GATE_TICKER: 'https://api.gateio.ws/api/v4/spot/tickers?currency_pair=PI_USDT',
@@ -56,6 +56,7 @@ PiNama.config = {
     MISSED: 'missedAlerts',
     PF_HISTORY: 'pfHistory',
     CALC_DIR: 'calcDir',
-    CALC_INPUT: 'calcInput'
+    CALC_INPUT: 'calcInput',
+    DISPLAY_CURRENCY: 'displayCurrency'
   }
 };

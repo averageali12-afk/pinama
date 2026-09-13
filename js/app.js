@@ -60,9 +60,16 @@
     if (st.usd != null && !st.error) {
       document.title = 'پی‌نما | ' + fmt.usd(st.usd);
     }
-    el.priceToman.textContent = (st.usd != null && st.tomanRate)
-      ? fmt.num(st.usd * st.tomanRate, 0) + ' تومان'
-      : '—';
+
+    // حالت نمایش: پیش‌فرض دلار-بزرگ؛ تومان-بزرگ برای کاربری که تومان فکر می‌کند
+    var tomanVal = (st.usd != null && st.tomanRate) ? st.usd * st.tomanRate : null;
+    if (S.get(K.DISPLAY_CURRENCY, 'usd') === 'toman' && tomanVal != null) {
+      el.priceUsd.textContent = fmt.num(tomanVal, 0) + ' تومان';
+      el.priceToman.textContent = fmt.usd(st.usd);
+    } else {
+      el.priceUsd.textContent = fmt.usd(st.usd);
+      el.priceToman.textContent = tomanVal != null ? fmt.num(tomanVal, 0) + ' تومان' : '—';
+    }
 
     var ch = st.change24h;
     el.priceChange.textContent = ch == null ? '—' : fmt.pct(ch);
@@ -337,9 +344,10 @@
     price.loadSeries(days).then(function (data) {
       if (currentDays !== days) return; // کاربر بازه دیگری انتخاب کرده
       chart.setData(data);
-      // سری کهنه (آفلاین): رندر کن ولی صادقانه اعلام کن
+      // برچسب کهنه با همان TTL که loadSeries استفاده می‌کند (۲۴ساعت=۵دقیقه، بقیه=۱ساعت)
+      var ttl = days === 1 ? C.SERIES_TTL_MS : C.CHART_TTL_MS;
       var entry = S.get(K.SERIES + days, null);
-      if (entry && entry.fetchedAt && Date.now() - entry.fetchedAt > 60 * 60 * 1000) {
+      if (entry && entry.fetchedAt && Date.now() - entry.fetchedAt > ttl) {
         el.chartLoading.textContent = 'نمودار کهنه — اتصال برقرار نشد';
         el.chartLoading.style.display = 'grid';
       } else {
@@ -393,7 +401,12 @@
 
   /* ═══════ ناوبری ═══════ */
 
+  var currentView = 'price';
+
   function switchView(name, fromPop) {
+    // تکراری: دکمه فعال/دوبل‌تپ نباید تاریخ dead-push کند یا تبلیغ بزند
+    if (name === currentView && !fromPop) return;
+    currentView = name;
     var btns = el.navBtns;
     for (var i = 0; i < btns.length; i++) {
       var active = btns[i].getAttribute('data-view') === name;
@@ -409,8 +422,6 @@
     if (!fromPop && typeof history !== 'undefined' && history.pushState) {
       try { history.pushState({ view: name }, ''); } catch (e) { /* حالت ویژه */ }
     }
-    // تبلیغ بینابینی (داخلی throttled می‌شود و بی‌صدا رد می‌شود)
-    ads.maybeShowInterstitial().catch(function () { });
   }
 
   /* ═══════ رویدادها ═══════ */
@@ -419,7 +430,11 @@
     // ناوبری پایین
     el.navBtns.forEach(function (btn) {
       btn.addEventListener('click', function () {
-        switchView(btn.getAttribute('data-view'));
+        var target = btn.getAttribute('data-view');
+        if (target === currentView) return; // تب فعال — هیچ کاری نکن
+        switchView(target);
+        // تبلیغ فقط در ناوبری رو به جلو — دکمه back هرگز تبلیغ نشان نمی‌دهد
+        ads.maybeShowInterstitial().catch(function () { });
       });
     });
 
@@ -516,7 +531,9 @@
       }
       el.alertPrice.value = '';
       renderAlertsList();
-      if (item.preMet) {
+      if (item.duplicate) {
+        PiNama.toast('این هشدار از قبل ثبت بود', 'gold');
+      } else if (item.preMet) {
         PiNama.toast('این قیمت الان رد شده — به‌عنوان فعال‌شده ثبت شد', 'gold');
       } else {
         PiNama.toast('هشدار ثبت شد ✓');
@@ -612,6 +629,16 @@
       });
     });
 
+    // واحد نمایش
+    el.currencyBtns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        el.currencyBtns.forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        S.set(K.DISPLAY_CURRENCY, btn.getAttribute('data-cur'));
+        renderPrice();
+      });
+    });
+
     // اشتراک‌گذاری
     el.shareBtn.addEventListener('click', function () { pi.share(); });
 
@@ -652,11 +679,12 @@
       }, 3000);
     });
 
-    // تازگی داده هنگام بازگشت به اپ
+    // تازگی داده + استریک هنگام بازگشت به اپ (بدون reload، DOMContentLoaded دیگر fire نمی‌شود)
     document.addEventListener('visibilitychange', function () {
       if (!document.hidden) {
         price.refresh();
         price.refreshTomanRate();
+        updateStreak();
       }
     });
 
@@ -755,6 +783,7 @@
       tfBtns: Array.prototype.slice.call(document.querySelectorAll('#tf-selector .seg-btn')),
       calcDirBtns: Array.prototype.slice.call(document.querySelectorAll('#calc-dir .seg-btn')),
       rateModeBtns: Array.prototype.slice.call(document.querySelectorAll('#rate-mode .seg-btn')),
+      currencyBtns: Array.prototype.slice.call(document.querySelectorAll('#display-currency .seg-btn')),
       views: Array.prototype.slice.call(document.querySelectorAll('.view'))
     };
 
@@ -772,6 +801,12 @@
     var calcDir = S.get(K.CALC_DIR, 'pi2usd');
     el.calcDirBtns.forEach(function (b) {
       b.classList.toggle('active', b.getAttribute('data-dir') === calcDir);
+    });
+
+    // واحد نمایش ذخیره‌شده
+    var cur = S.get(K.DISPLAY_CURRENCY, 'usd');
+    el.currencyBtns.forEach(function (b) {
+      b.classList.toggle('active', b.getAttribute('data-cur') === cur);
     });
 
     // سرویس‌ها

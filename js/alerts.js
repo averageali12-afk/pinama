@@ -29,6 +29,7 @@
       for (var i = 0; i < this.list.length; i++) {
         var ex = this.list[i];
         if (ex.dir === dir && !ex.triggeredAt && Math.abs(ex.price - p) / p < 0.001) {
+          ex.duplicate = true;
           return ex;
         }
       }
@@ -54,11 +55,24 @@
       this.save();
     },
 
-    rearm: function (id) {
+    /** فعال‌سازی مجدد — اگر شرط همین الان برقرار است، بی‌صدا مسلح نشو (هشدار کاذب نده) */
+    rearm: function (id, currentUsd) {
+      var rearmed = false;
       this.list.forEach(function (a) {
-        if (a.id === id) a.triggeredAt = null;
+        if (a.id !== id) return;
+        var preMet = isFinite(currentUsd) && currentUsd > 0 &&
+          ((a.dir === 'above' && currentUsd >= a.price) || (a.dir === 'below' && currentUsd <= a.price));
+        if (preMet) {
+          a.triggeredAt = Date.now(); // از قبل رد شده — فعال‌شده بمان
+          a.preMet = true;
+        } else {
+          a.triggeredAt = null;
+          a.preMet = false;
+          rearmed = true;
+        }
       });
       this.save();
+      return rearmed;
     },
 
     /** قیمت جدید را با همه هشدارهای فعال مقایسه کن؛ موارد فعال‌شده را برگردان */
@@ -132,8 +146,11 @@
           rearm.title = 'فعال‌سازی مجدد';
           rearm.textContent = '↺';
           rearm.addEventListener('click', function () {
-            self.rearm(a.id);
-            self.render(ul);
+            var ok = self.rearm(a.id, currentUsd);
+            self.render(ul, currentUsd);
+            if (PiNama.toast) {
+              PiNama.toast(ok ? 'هشدار دوباره مسلح شد ✓' : 'این قیمت الان رد شده — فعال‌شده ماند', ok ? '' : 'gold');
+            }
           });
           row.appendChild(rearm);
         }

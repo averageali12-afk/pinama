@@ -205,6 +205,15 @@
       </div>
 
       <div class="card">
+        <h3 class="card-title">واحد نمایش</h3>
+        <div class="segmented" id="display-currency">
+          <button class="seg-btn active" data-cur="usd" type="button">دلار بزرگ</button>
+          <button class="seg-btn" data-cur="toman" type="button">تومان بزرگ</button>
+        </div>
+        <p class="hint">قیمت اصلی صفحه با کدام واحد بزرگ نمایش داده شود.</p>
+      </div>
+
+      <div class="card">
         <h3 class="card-title">حمایت از توسعه</h3>
         <p class="hint">با تماشای یک تبلیغ کوتاه، از این اپ حمایت کنید (فقط داخل Pi Browser و پس از تایید Ad Network).</p>
         <button class="btn btn-primary" id="watch-ad-btn" type="button">تماشای تبلیغ حمایتی</button>
@@ -256,15 +265,15 @@
   <div id="toast-root"></div>
 
   <!-- Pi SDK — باید قبل از اسکریپت‌های اپ لود شود -->
-  <script type="text/javascript" src="https://sdk.minepi.com/pi-sdk.js"></script>
-  <script type="text/javascript" src="js/config.js"></script>
-  <script type="text/javascript" src="js/storage.js"></script>
-  <script type="text/javascript" src="js/price.js"></script>
-  <script type="text/javascript" src="js/chart.js"></script>
-  <script type="text/javascript" src="js/pi.js"></script>
-  <script type="text/javascript" src="js/ads.js"></script>
-  <script type="text/javascript" src="js/alerts.js"></script>
-  <script type="text/javascript" src="js/app.js"></script>
+  <script defer src="https://sdk.minepi.com/pi-sdk.js"></script>
+  <script defer src="js/config.js"></script>
+  <script defer src="js/storage.js"></script>
+  <script defer src="js/price.js"></script>
+  <script defer src="js/chart.js"></script>
+  <script defer src="js/pi.js"></script>
+  <script defer src="js/ads.js"></script>
+  <script defer src="js/alerts.js"></script>
+  <script defer src="js/app.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
