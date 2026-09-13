@@ -56,9 +56,12 @@
     el.priceUsd.textContent = fmt.usd(st.usd);
     if (chart && st.usd != null) chart.setReference(st.usd);
 
-    // قیمت زنده در عنوان تب — دیدنی در سوییچ اپ‌ها
+    // قیمت زنده در عنوان تب — هماهنگ با واحد نمایش انتخابی
     if (st.usd != null && !st.error) {
-      document.title = 'پی‌نما | ' + fmt.usd(st.usd);
+      var titleVal = (S.get(K.DISPLAY_CURRENCY, 'usd') === 'toman' && st.tomanRate)
+        ? fmt.num(st.usd * st.tomanRate, 0) + ' تومان'
+        : fmt.usd(st.usd);
+      document.title = 'پی‌نما | ' + titleVal;
     }
 
     // حالت نمایش: پیش‌فرض دلار-بزرگ؛ تومان-بزرگ برای کاربری که تومان فکر می‌کند
