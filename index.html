@@ -107,7 +107,7 @@
         </div>
         <label class="field">
           <span id="calc-input-label">مقدار Pi</span>
-          <input type="number" id="calc-input" inputmode="decimal" min="0" step="any" placeholder="مثلاً 15" />
+          <input type="text" id="calc-input" inputmode="decimal" min="0" step="any" placeholder="مثلاً 15" />
         </label>
         <div class="calc-result" id="calc-result">—</div>
       </div>
@@ -119,11 +119,11 @@
         <h3 class="card-title">پرتفوی من</h3>
         <label class="field">
           <span>موجودی Pi</span>
-          <input type="number" id="pf-holdings" inputmode="decimal" min="0" step="any" placeholder="15" />
+          <input type="text" id="pf-holdings" inputmode="decimal" min="0" step="any" placeholder="15" />
         </label>
         <label class="field">
           <span>میانگین قیمت خرید (دلار — اختیاری)</span>
-          <input type="number" id="pf-avg" inputmode="decimal" min="0" step="any" placeholder="0.00" />
+          <input type="text" id="pf-avg" inputmode="decimal" min="0" step="any" placeholder="0.00" />
         </label>
 
         <div class="pf-values">
@@ -163,7 +163,7 @@
             <option value="above">وقتی Pi رفت بالای</option>
             <option value="below">وقتی Pi افتاد زیر</option>
           </select>
-          <input type="number" id="alert-price" inputmode="decimal" min="0" step="any" placeholder="0.10" dir="ltr" />
+          <input type="text" id="alert-price" inputmode="decimal" min="0" step="any" placeholder="0.10" dir="ltr" />
           <button class="btn btn-primary" id="alert-add" type="button">افزودن</button>
         </div>
         <div class="quick-alerts">
@@ -197,7 +197,7 @@
         </div>
         <label class="field" id="rate-manual-field" hidden>
           <span>نرخ هر دلار به تومان</span>
-          <input type="number" id="rate-manual" inputmode="numeric" min="0" step="any" dir="ltr" />
+          <input type="text" id="rate-manual" inputmode="numeric" min="0" step="any" dir="ltr" />
         </label>
         <div class="row-between">
           <span class="muted" id="rate-status">—</span>
