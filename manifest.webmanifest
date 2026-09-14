@@ -12,6 +12,18 @@
   "background_color": "#0e0b16",
   "theme_color": "#0e0b16",
   "categories": ["finance", "utilities"],
+  "shortcuts": [
+    {
+      "name": "هشدارهای قیمت",
+      "url": "./index.html#alerts",
+      "icons": [{ "src": "./icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "پرتفوی من",
+      "url": "./index.html#portfolio",
+      "icons": [{ "src": "./icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
   "icons": [
     {
       "src": "./icons/icon-192.png",

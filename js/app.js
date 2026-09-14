@@ -820,8 +820,12 @@
     price.hydrateFromCache(); // نمایش فوری از کش
     price.refresh();
     price.refreshTomanRate();
-    setInterval(function () { price.refresh(); }, C.PRICE_REFRESH_MS);
-    setInterval(function () { price.refreshTomanRate(); }, C.RATE_REFRESH_MS);
+    setInterval(function () {
+      if (!document.hidden) price.refresh(); // در بک‌گراند poll نکن — صرفه‌جویی دیتا و باتری
+    }, C.PRICE_REFRESH_MS);
+    setInterval(function () {
+      if (!document.hidden) price.refreshTomanRate();
+    }, C.RATE_REFRESH_MS);
 
     chart = new PiNama.Chart(el.chartEl, el.chartTooltip);
     loadChart(currentDays);
@@ -841,5 +845,11 @@
 
     el.envBadge.hidden = pi.inPiBrowser;
     if ('Notification' in window) updateNotifUi(Notification.permission);
+
+    // میان‌بُر PWA (لمس طولانی آیکون): #alerts / #portfolio / #settings
+    var hash = (location.hash || '').replace('#', '');
+    if (['portfolio', 'alerts', 'settings'].indexOf(hash) !== -1) {
+      switchView(hash);
+    }
   });
 })();
