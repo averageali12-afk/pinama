@@ -103,7 +103,11 @@ tools/gen-icons.js  ← تولید آیکون‌های PNG بدون وابستگ
 ```bash
 node test/smoke.js   # ۳۳ تست منطق (storage، هشدارها، زنجیره نرخ، سری زمانی، فرمت، ارقام فارسی)
 node test/render.js  # ۱۸ تست راه‌اندازی کامل app.js با DOM شبیه‌سازی‌شده (شامل رگرسیون todayV)
+node test/e2e.js     # ۱۲ بررسی E2E با مرورگر واقعی Playwright — روی localhost یا URL زنده:
+node test/e2e.js https://averageali12-afk.github.io/pinama/
 ```
+
+E2E جریان واقعی کاربر را در chromium شبیه‌سازی می‌کند: رندر قیمت، نمودار، چیپ‌ها، تعویض تب، ارقام فارسی، هشدار سریع، واحد نمایش — و اسکرین‌شات در `shots/e2e-final.png` می‌گیرد.
 
 ## 🗺 نقشه راه (نسخه‌های بعد)
 
