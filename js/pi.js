@@ -85,7 +85,11 @@
         } catch (e) { /* ادامه با Web Share */ }
       }
       if (navigator.share) {
-        navigator.share({ title: title, text: message }).catch(function () { /* لغو شد */ });
+        navigator.share({
+          title: title,
+          text: message,
+          url: location.origin + location.pathname
+        }).catch(function () { /* لغو شد */ });
       } else {
         var url = location.origin + location.pathname;
         if (navigator.clipboard) {

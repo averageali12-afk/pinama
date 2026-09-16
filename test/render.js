@@ -40,6 +40,7 @@ function stubEl(id) {
         return m[id] || '7';
       }
       if (k === 'data-dir') return id === 'cd-target' ? 'target' : id === 'cd-2' ? 'usd2pi' : 'pi2usd';
+      if (k === 'data-amount') return id.replace('amt-', '');
       if (k === 'data-mode') return 'auto';
       if (k === 'data-cur') return id === 'cur-toman' ? 'toman' : 'usd';
       return null;
@@ -105,6 +106,7 @@ global.document = {
     if (sel === '.nav-btn') return navIds.map(getEl);
     if (sel === '#tf-selector .seg-btn') return [getEl('tf-1'), getEl('tf-7'), getEl('tf-30')];
     if (sel === '#calc-dir .seg-btn') return [getEl('cd-1'), getEl('cd-2'), getEl('cd-target')];
+    if (sel === '#calc-amounts .chip') return [getEl('amt-1'), getEl('amt-10'), getEl('amt-100'), getEl('amt-1000')];
     if (sel === '#rate-mode .seg-btn') return [getEl('rm-1'), getEl('rm-2')];
     if (sel === '#display-currency .seg-btn') return [getEl('cur-usd'), getEl('cur-toman')];
     if (sel === '.change-chips .chip') return [getEl('chip-1'), getEl('chip-7'), getEl('chip-30')];
@@ -214,6 +216,12 @@ setTimeout(function () {
       getEl('calc-input').listeners.input.forEach(function (fn) { fn(); });
       t('profit table rows render', getEl('profit-table').children.length >= 5, 'rows=' + getEl('profit-table').children.length);
     } catch (e) { t('profit table rows render', false, e.message); }
+
+    /* چیپ مبلغ ۱۰۰۰ */
+    try {
+      getEl('amt-1000').listeners.click.forEach(function (fn) { fn(); });
+      t('amount chip sets input', getEl('calc-input').value === '1000', 'got "' + getEl('calc-input').value + '"');
+    } catch (e) { t('amount chip sets input', false, e.message); }
 
     /* تعویض تب نباید crash کند */
     try {

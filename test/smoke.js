@@ -75,6 +75,7 @@ async function main() {
   t('parse persian digits', PiNama.fmt.parse('۱۵٫۵') === 15.5, 'got ' + PiNama.fmt.parse('۱۵٫۵'));
   t('parse arabic digits', PiNama.fmt.parse('٢٣٥٠٠٠') === 235000, 'got ' + PiNama.fmt.parse('٢٣٥٠٠٠'));
   t('parse thousands sep', PiNama.fmt.parse('235,000') === 235000);
+  t('parse persian thousands sep ٬', PiNama.fmt.parse('۱٬۵۰۰٬۰۰۰') === 1500000, 'got ' + PiNama.fmt.parse('۱٬۵۰۰٬۰۰۰'));
   t('parse invalid → NaN', isNaN(PiNama.fmt.parse('abc')));
 
   /* ─── زنجیره نرخ تومان ─── */

@@ -85,7 +85,7 @@
     el.priceSource.textContent = 'منبع: ' + (st.source || '—');
 
     el.liveDot.className = 'live-dot ' +
-      (st.error ? (st.usd != null ? 'stale' : 'err') : 'ok');
+      (st.usd == null ? '' : st.error ? 'stale' : 'ok');
     el.offlineBanner.hidden = !st.error || st.hydrating;
 
     el.statHigh.textContent = fmt.usd(st.high24h);
@@ -324,6 +324,19 @@
       el.pfDayChange.hidden = false;
       el.pfDayChange.className = 'pf-pl ' + (pct >= 0 ? 'gain' : 'loss');
       el.pfDayValue.textContent = (pct >= 0 ? '▲ ' : '▼ ') + fmt.pct(pct) + ' از دیروز';
+
+      // هفتگی: نسبت به رکورد ~۷ روز قبل (اگر تاریخچه کافی باشد)
+      if (hist.length >= 8) {
+        var week = hist[hist.length - 8]; // قدیمی‌ترین رکورد با سقف ۶۰
+        if (week && week.v > 0) {
+          var wpct = (todayV / week.v - 1) * 100;
+          el.pfWeekChange.hidden = false;
+          el.pfWeekChange.className = 'pf-pl ' + (wpct >= 0 ? 'gain' : 'loss');
+          el.pfWeekValue.textContent = (wpct >= 0 ? '▲ ' : '▼ ') + fmt.pct(wpct) + ' از ۷ روز قبل';
+        }
+      } else {
+        el.pfWeekChange.hidden = true;
+      }
     }
   }
 
@@ -439,6 +452,7 @@
     renderCalc();
     renderPortfolio();
     renderRate();
+    renderAlertsList(); // فاصله‌های «چند ٪ مانده» زنده بمانند
     checkAlerts(price.state.usd);
     if (!price.state.error) {
       updateAllChangeChips();
@@ -496,6 +510,11 @@
     // لمس «— تومان» وقتی نرخ در دسترس نیست → راهنمایی به نرخ دستی
     el.priceToman.addEventListener('click', function () {
       if (price.state.tomanRate != null) return; // فقط وقتی نرخ نداریم راهنمایی کن
+      if (!price.state.tomanAt) {
+        // هنوز هیچ تلاشی کامل نشده — چند ثانیه صبر، مدل دستی را قفل نکن
+        PiNama.toast('در حال دریافت نرخ دلار…', 'gold');
+        return;
+      }
       S.set(K.RATE_MODE, 'manual');
       price.setRateMode('manual').then(function () {
         switchView('settings');
@@ -551,9 +570,22 @@
       S.set(K.CALC_INPUT, el.calcInput.value);
       renderCalc();
     });
+    // میانگین خرید ماشین‌حساب سود = همان AVG_BUY پرتفوی (یک منبع حقیقت)
     el.calcProfitAvg.addEventListener('input', function () {
-      S.set(K.CALC_INPUT, el.calcInput.value); // جهت فعال است؛ ورودی میانگین فقط رندر را تازه می‌کند
+      var v = fmt.parse(el.calcProfitAvg.value);
+      S.set(K.AVG_BUY, isFinite(v) && v > 0 ? v : 0);
+      if (el.pfAvg.value !== el.calcProfitAvg.value) el.pfAvg.value = el.calcProfitAvg.value;
       renderCalc();
+      renderPortfolio();
+    });
+
+    // چیپ‌های مبلغ سریع ماشین‌حساب
+    el.calcAmountBtns.forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        el.calcInput.value = chip.getAttribute('data-amount');
+        S.set(K.CALC_INPUT, el.calcInput.value);
+        renderCalc();
+      });
     });
 
     // پرتفوی: دکمه اشتراک وضعیت
@@ -567,9 +599,9 @@
       var usd = h * st.usd;
       var text = '💰 ' + fmt.num(h, 2) + ' PI ≈ ' + fmt.usd(usd, 2) +
         (st.tomanRate ? ' (' + fmt.num(usd * st.tomanRate, 0) + ' تومان)' : '') +
-        '\nبا اپ پی‌نما دنبالش می‌کنم 📈';
+        '\nبا اپ پی‌نما دنبالش می‌کنم 📈\n' + (location.origin + location.pathname);
       if (navigator.share) {
-        navigator.share({ text: text }).catch(function () { });
+        navigator.share({ text: text, url: location.origin + location.pathname }).catch(function () { });
       } else if (navigator.clipboard) {
         navigator.clipboard.writeText(text).then(function () {
           PiNama.toast('متن وضعیت کپی شد 📋', 'gold');
@@ -809,6 +841,7 @@
       calcProfitField: $('calc-profit-field'),
       calcProfitAvg: $('calc-profit-avg'),
       profitTable: $('profit-table'),
+      calcAmountBtns: Array.prototype.slice.call(document.querySelectorAll('#calc-amounts .chip')),
       pfHoldings: $('pf-holdings'),
       pfAvg: $('pf-avg'),
       pfUsd: $('pf-usd'),
@@ -817,6 +850,8 @@
       pfPlValue: $('pf-pl-value'),
       pfDayChange: $('pf-day-change'),
       pfDayValue: $('pf-day-value'),
+      pfWeekChange: $('pf-week-change'),
+      pfWeekValue: $('pf-week-value'),
       pfShare: $('pf-share'),
       alertDir: $('alert-dir'),
       alertPrice: $('alert-price'),
@@ -857,6 +892,7 @@
     // مقدارهای اولیه فرم‌ها از حافظه
     el.pfHoldings.value = S.get(K.HOLDINGS, C.DEFAULT_HOLDINGS) || '';
     el.pfAvg.value = S.get(K.AVG_BUY, 0) > 0 ? S.get(K.AVG_BUY, 0) : '';
+    el.calcProfitAvg.value = el.pfAvg.value; // یک منبع حقیقت: میانگین خرید مشترک
     el.calcInput.value = S.get(K.CALC_INPUT, null) != null
       ? S.get(K.CALC_INPUT, '')
       : (S.get(K.HOLDINGS, C.DEFAULT_HOLDINGS) || '');

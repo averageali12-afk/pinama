@@ -13,12 +13,13 @@
         .replace(/[۰-۹]/g, function (d) { return String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d)); })
         .replace(/[٠-٩]/g, function (d) { return String('٠١٢٣٤٥٦٧٨٩'.indexOf(d)); });
     },
-    /** parseFloat مقاوم به ارقام فارسی، ممیز فارسی و جداکننده هزارگان */
+    /** parseFloat مقاوم به ارقام فارسی، ممیز/جداکننده هزارگان فارسی و جداکننده ASCII */
     parse: function (s) {
       if (s == null) return NaN;
       var v = parseFloat(
         PiNama.fmt.latinDigits(String(s))
           .replace(/٫/g, '.') // ممیز فارسی/عربی → نقطه
+          .replace(/٬/g, ',') // جداکننده هزارگان عربی → کاما
           .replace(/,/g, '')  // جداکننده هزارگان
       );
       return isFinite(v) ? v : NaN;
@@ -105,7 +106,7 @@
         high24h: parseFloat(r.high_24h || 'NaN'),
         low24h: parseFloat(r.low_24h || 'NaN'),
         marketCap: null,
-        volume24h: parseFloat(r.base_volume || 'NaN'),
+        volume24h: parseFloat(r.quote_volume || 'NaN'), // USD واقعی، نه حجم PI
         source: 'Gate.io'
       };
     });

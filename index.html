@@ -43,7 +43,7 @@
     <section id="view-price" class="view active" aria-label="قیمت">
       <div class="card price-card">
         <div class="price-head">
-          <span class="coin-name">Pi Network <em>PI/USD</em></span>
+          <span class="coin-name">Pi Network <em>PI/USDT</em></span>
           <span class="live-dot" id="live-dot" title="وضعیت اتصال"></span>
         </div>
         <div class="price-main">
@@ -110,6 +110,12 @@
           <span id="calc-input-label">مقدار Pi</span>
           <input type="text" id="calc-input" inputmode="decimal" min="0" step="any" placeholder="مثلاً 15" />
         </label>
+        <div class="calc-amounts" id="calc-amounts">
+          <button class="chip" type="button" data-amount="1">۱</button>
+          <button class="chip" type="button" data-amount="10">۱۰</button>
+          <button class="chip" type="button" data-amount="100">۱۰۰</button>
+          <button class="chip" type="button" data-amount="1000">۱۰۰۰</button>
+        </div>
         <label class="field" id="calc-profit-field" hidden>
           <span>میانگین خرید دلاری (اختیاری)</span>
           <input type="text" id="calc-profit-avg" inputmode="decimal" placeholder="0.00" dir="ltr" />
@@ -149,6 +155,10 @@
         <div class="pf-pl" id="pf-day-change" hidden>
           <small>ارزش پرتفوی</small>
           <b id="pf-day-value">—</b>
+        </div>
+        <div class="pf-pl" id="pf-week-change" hidden>
+          <small>روند هفتگی</small>
+          <b id="pf-week-value">—</b>
         </div>
         <button class="btn btn-ghost btn-sm" id="pf-share" type="button">اشتراک وضعیت من 📊</button>
         <p class="hint">داده‌ها فقط روی همین دستگاه ذخیره می‌شوند.</p>

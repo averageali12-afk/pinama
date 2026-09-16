@@ -319,6 +319,7 @@ body {
   -webkit-user-select: none;
   text-align: center;
   padding: 10px;
+  background: rgba(14, 11, 22, 0.78);
 }
 
 .chart-tooltip {
@@ -437,6 +438,10 @@ body {
   font-variant-numeric: tabular-nums;
   color: var(--purple-2);
 }
+
+/* چیپ‌های مبلغ ماشین‌حساب */
+.calc-amounts { display: flex; gap: 6px; margin-bottom: 12px; }
+.calc-amounts .chip { flex: 1; }
 
 /* جدول سود هدف */
 .profit-table {
