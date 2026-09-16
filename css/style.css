@@ -199,6 +199,9 @@ body {
   font-size: 15px;
   font-weight: 700;
   margin-top: 2px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /* فلش تغییر قیمت */

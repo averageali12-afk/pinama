@@ -384,6 +384,8 @@
       var msg = '🎯 Pi ' + (a.dir === 'above' ? 'رسید بالای' : 'افتاد زیر') + ' ' + fmt.usd(a.price);
       PiNama.toast(msg, 'gold');
       notify(msg, 'pinama-' + a.id);
+      // بازخورد فیزیکی — نوتیفیکیشن ناپایدار است ولی ویبره در WebView قطعی است
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
       S.push(K.MISSED, { msg: msg, at: Date.now(), id: a.id }, 30);
     });
     renderAlertsList();
@@ -448,6 +450,19 @@
         switchView((e.state && e.state.view) || 'price', true);
       });
     }
+
+    // لمس «— تومان» وقتی نرخ در دسترس نیست → راهنمایی به نرخ دستی
+    el.priceToman.addEventListener('click', function () {
+      if (price.state.tomanRate != null) return; // فقط وقتی نرخ نداریم راهنمایی کن
+      S.set(K.RATE_MODE, 'manual');
+      price.setRateMode('manual').then(function () {
+        switchView('settings');
+        setTimeout(function () {
+          el.rateManual.focus();
+          PiNama.toast('نرخ دلار را دستی وارد کن (مثلاً ۱۰۰٬۰۰۰)', 'gold');
+        }, 350);
+      });
+    });
 
     // تلاش مجدد نمودار با لمس پیام خطا
     el.chartLoading.addEventListener('click', function () {
