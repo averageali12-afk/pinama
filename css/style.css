@@ -621,6 +621,24 @@ body {
 
 .ad-status { display: block; margin-top: 8px; }
 
+/* یادداشت انگلیسی داوران */
+.reviewer-note {
+  margin-top: 10px;
+  font-size: 12px;
+  direction: ltr;
+  text-align: left;
+}
+.reviewer-note summary {
+  color: var(--purple-2);
+  cursor: pointer;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.reviewer-note p {
+  color: var(--text-dim);
+  line-height: 1.8;
+}
+
 /* ─── صفحات حقوقی (شرایط/حریم خصوصی) ─── */
 .legal { line-height: 2; }
 
