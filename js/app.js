@@ -325,14 +325,16 @@
       el.pfDayChange.className = 'pf-pl ' + (pct >= 0 ? 'gain' : 'loss');
       el.pfDayValue.textContent = (pct >= 0 ? '▲ ' : '▼ ') + fmt.pct(pct) + ' از دیروز';
 
-      // هفتگی: نسبت به رکورد ~۷ روز قبل (اگر تاریخچه کافی باشد)
+      // هفتگی: رکورد ۷ اسنپ‌شات قبل (hist[0]=امروز، hist[7]=~۷ روز قبل)
       if (hist.length >= 8) {
-        var week = hist[hist.length - 8]; // قدیمی‌ترین رکورد با سقف ۶۰
-        if (week && week.v > 0) {
+        var week = hist[7];
+        if (week && week.v > 0 && week.d !== today) {
           var wpct = (todayV / week.v - 1) * 100;
           el.pfWeekChange.hidden = false;
           el.pfWeekChange.className = 'pf-pl ' + (wpct >= 0 ? 'gain' : 'loss');
           el.pfWeekValue.textContent = (wpct >= 0 ? '▲ ' : '▼ ') + fmt.pct(wpct) + ' از ۷ روز قبل';
+        } else {
+          el.pfWeekChange.hidden = true;
         }
       } else {
         el.pfWeekChange.hidden = true;
@@ -615,7 +617,10 @@
     });
     el.pfAvg.addEventListener('input', function () {
       S.set(K.AVG_BUY, fmt.parse(el.pfAvg.value) || 0);
+      // sync معکوس: ماشین‌حساب سود همان میانگین را نشان دهد
+      if (el.calcProfitAvg.value !== el.pfAvg.value) el.calcProfitAvg.value = el.pfAvg.value;
       renderPortfolio();
+      renderCalc();
     });
 
     // هشدارها

@@ -160,10 +160,17 @@ function t(name, cond, extra) {
   else { failed++; console.log('  ✗ ' + name + (extra ? ' → ' + extra : '')); }
 }
 
-/* seed رگرسیون: pfHistory با رکورد دیروز (مسیر بحرانی todayV که قبلاً می‌شکست) */
+/* seed رگرسیون: pfHistory با رکورد دیروز + ۸ رکورد (مسیر بحرانی todayV و چیپ هفتگی) */
 (function seedYesterday() {
   const y = new Date(Date.now() - 86400000).toLocaleDateString('en-CA');
   memStore['pinama.v2.pfHistory'] = JSON.stringify([{ d: y, v: 15 * 0.0900 }]);
+  // ۸ رکورد برای چیپ هفتگی: [0]=امروز (بعداً push می‌شود)، [1..7]=روزهای قبل با قیمت‌های متفاوت
+  const seeds = [{ d: y, v: 1.35 }];
+  for (let i = 2; i <= 7; i++) {
+    const d = new Date(Date.now() - i * 86400000).toLocaleDateString('en-CA');
+    seeds.push({ d: d, v: 15 * (0.0800 + i * 0.001) }); // قدیمی‌ها ~0.082–0.087
+  }
+  memStore['pinama.v2.pfHistory'] = JSON.stringify(seeds); // ۷ رکورد قبل از امروز
 })();
 
 /* اجرای DOMContentLoaded */
@@ -197,8 +204,9 @@ setTimeout(function () {
     } catch (e) { t('toman-first display toggles', false, e.message); }
     t('streak starts at 1 (not shown)', PiNama.storage.get('streak', 0) === 1 && getEl('streak-line').textContent === '', 'streak=' + PiNama.storage.get('streak', 0));
     t('live title set', String(document.title).indexOf('$0.0955') !== -1, 'got "' + document.title + '"');
-    t('day change snapshot exists', PiNama.storage.get('pfHistory', []).length === 2, 'len=' + PiNama.storage.get('pfHistory', []).length);
+    t('day change snapshot exists', PiNama.storage.get('pfHistory', []).length === 8, 'len=' + PiNama.storage.get('pfHistory', []).length);
     t('«از دیروز» renders (todayV fix)', String(getEl('pf-day-value').textContent).indexOf('از دیروز') !== -1, 'got "' + getEl('pf-day-value').textContent + '"');
+    t('weekly chip uses hist[7] not oldest', String(getEl('pf-week-value').textContent).indexOf('از ۷ روز قبل') !== -1, 'got "' + getEl('pf-week-value').textContent + '"');
     t('30d range line renders', getEl('range-line').textContent.length > 3, 'got "' + getEl('range-line').textContent + '"');
 
     /* دکمه هشدار سریع +۵٪ */
