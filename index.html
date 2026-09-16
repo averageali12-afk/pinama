@@ -104,12 +104,18 @@
         <div class="calc-dir" id="calc-dir">
           <button class="seg-btn active" data-dir="pi2usd" type="button">Pi ← تومان/دلار</button>
           <button class="seg-btn" data-dir="usd2pi" type="button">تومان/دلار ← Pi</button>
+          <button class="seg-btn" data-dir="target" type="button">سود هدف 🎯</button>
         </div>
         <label class="field">
           <span id="calc-input-label">مقدار Pi</span>
           <input type="text" id="calc-input" inputmode="decimal" min="0" step="any" placeholder="مثلاً 15" />
         </label>
+        <label class="field" id="calc-profit-field" hidden>
+          <span>میانگین خرید دلاری (اختیاری)</span>
+          <input type="text" id="calc-profit-avg" inputmode="decimal" placeholder="0.00" dir="ltr" />
+        </label>
         <div class="calc-result" id="calc-result">—</div>
+        <div class="profit-table" id="profit-table" hidden></div>
       </div>
     </section>
 

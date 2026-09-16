@@ -99,23 +99,65 @@
     var st = price.state;
     var raw = fmt.parse(el.calcInput.value);
 
-    el.calcInputLabel.textContent = dir === 'pi2usd' ? 'مقدار Pi' : 'مقدار (تومان)';
+    el.calcInputLabel.textContent = dir === 'pi2usd' ? 'مقدار Pi' : dir === 'usd2pi' ? 'مقدار (تومان)' : 'مقدار Pi';
+    el.calcProfitField.hidden = dir !== 'target';
+    el.profitTable.hidden = dir !== 'target';
 
     if (!isFinite(raw) || raw <= 0 || st.usd == null) {
       el.calcResult.textContent = '—';
+      el.profitTable.hidden = true;
       return;
     }
     if (dir === 'pi2usd') {
       var usd = raw * st.usd;
       el.calcResult.textContent = fmt.usd(usd, 2) +
         (st.tomanRate ? '   ≈   ' + fmt.num(usd * st.tomanRate, 0) + ' تومان' : '');
-    } else {
+    } else if (dir === 'usd2pi') {
       if (!st.tomanRate) {
         el.calcResult.textContent = '—';
         return;
       }
       var piCount = raw / (st.usd * st.tomanRate);
       el.calcResult.textContent = '≈ ' + fmt.num(piCount, 4) + ' PI';
+    } else {
+      // سود هدف: قیمت فروش لازم برای +۱۰٪ تا +۱۰۰٪
+      el.calcResult.textContent = fmt.usd(st.usd, 4) + ' الان';
+      var avg = fmt.parse(el.calcProfitAvg.value);
+      var base = (isFinite(avg) && avg > 0) ? avg : st.usd; // بدون میانگین، نسبت به الان
+      var baseLabel = (isFinite(avg) && avg > 0) ? 'قیمت خرید شما' : 'قیمت الان';
+      var table = el.profitTable;
+      table.textContent = '';
+      var head = document.createElement('div');
+      head.className = 'profit-row profit-head';
+      head.innerHTML = '';
+      var h1 = document.createElement('span');
+      h1.textContent = 'هدف';
+      var h2 = document.createElement('span');
+      h2.textContent = 'قیمت فروش';
+      var h3 = document.createElement('span');
+      h3.textContent = 'ارزش ' + fmt.num(raw, 2) + ' PI';
+      head.appendChild(h1); head.appendChild(h2); head.appendChild(h3);
+      table.appendChild(head);
+      [10, 25, 50, 100].forEach(function (p) {
+        var target = base * (1 + p / 100);
+        var row = document.createElement('div');
+        row.className = 'profit-row';
+        var c1 = document.createElement('span');
+        c1.textContent = '+' + p + '٪';
+        var c2 = document.createElement('span');
+        c2.className = 'ltr';
+        c2.textContent = fmt.usd(target, 4) + (isFinite(avg) && avg > 0 ? '' : ' *');
+        var c3 = document.createElement('span');
+        c3.textContent = st.tomanRate ? fmt.num(target * raw * st.tomanRate, 0) + ' ت' : fmt.usd(target * raw, 0);
+        row.appendChild(c1); row.appendChild(c2); row.appendChild(c3);
+        table.appendChild(row);
+      });
+      var note = document.createElement('p');
+      note.className = 'hint';
+      note.textContent = isFinite(avg) && avg > 0
+        ? 'بر مبنای ' + baseLabel + ': ' + fmt.usd(avg, 4)
+        : '* برای محاسبه دقیق‌تر، میانگین خرید دلاری‌ات را وارد کن';
+      table.appendChild(note);
     }
   }
 
@@ -509,6 +551,10 @@
       S.set(K.CALC_INPUT, el.calcInput.value);
       renderCalc();
     });
+    el.calcProfitAvg.addEventListener('input', function () {
+      S.set(K.CALC_INPUT, el.calcInput.value); // جهت فعال است؛ ورودی میانگین فقط رندر را تازه می‌کند
+      renderCalc();
+    });
 
     // پرتفوی: دکمه اشتراک وضعیت
     el.pfShare.addEventListener('click', function () {
@@ -760,6 +806,9 @@
       calcInputLabel: $('calc-input-label'),
       calcInput: $('calc-input'),
       calcResult: $('calc-result'),
+      calcProfitField: $('calc-profit-field'),
+      calcProfitAvg: $('calc-profit-avg'),
+      profitTable: $('profit-table'),
       pfHoldings: $('pf-holdings'),
       pfAvg: $('pf-avg'),
       pfUsd: $('pf-usd'),

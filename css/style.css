@@ -438,6 +438,33 @@ body {
   color: var(--purple-2);
 }
 
+/* جدول سود هدف */
+.profit-table {
+  margin-top: 10px;
+  background: var(--card-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+}
+.profit-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 2px;
+  font-size: 12.5px;
+  border-bottom: 1px solid rgba(169, 158, 199, 0.08);
+  color: var(--text-dim);
+}
+.profit-row:last-child { border-bottom: 0; }
+.profit-row.profit-head {
+  font-size: 11px;
+  color: var(--text-faint);
+  font-weight: 600;
+}
+.profit-row span:nth-child(2) { color: var(--gold); font-weight: 700; direction: ltr; }
+.profit-row span.ltr, .profit-row span:nth-child(3) { direction: ltr; }
+.profit-row span:nth-child(3) { color: var(--text-dim); }
+
 /* ─── پرتفوی ─── */
 .pf-values { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; }
 

@@ -119,7 +119,16 @@ function t(name, cond, extra) {
   await page.click('.nav-btn[data-view="price"]');
   await page.waitForTimeout(300);
 
-  // ۱۱ — اسکرین‌شات نهایی
+  // ۱۱ — ماشین‌حساب سود هدف (تب قیمت → تب ماشین‌حساب)
+  await page.click('.nav-btn[data-view="price"]');
+  await page.waitForTimeout(300);
+  await page.click('#calc-dir .seg-btn[data-dir="target"]');
+  await page.fill('#calc-input', '15');
+  await page.waitForTimeout(300);
+  const profitRows = await page.$$eval('#profit-table .profit-row', els => els.length);
+  t('جدول سود هدف رندر شد', profitRows >= 5, 'rows=' + profitRows);
+
+  // ۱۲ — اسکرین‌شات نهایی
   await page.screenshot({ path: path.join(SHOTS, 'e2e-final.png') });
 
   // ۱۲ — بدون exception کنسول

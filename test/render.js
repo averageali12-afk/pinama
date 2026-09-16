@@ -29,8 +29,8 @@ function stubEl(id) {
     listeners: {},
     addEventListener: function (ev, fn) { (this.listeners[ev] = this.listeners[ev] || []).push(fn); },
     removeEventListener: function () { },
-    appendChild: function () { },
-    removeChild: function () { },
+    appendChild: function (child) { this.children.push(child); },
+    removeChild: function (c) { this.children = this.children.filter(function (x) { return x !== c; }); },
     setAttribute: function (k) { this['attr_' + k] = true; },
     removeAttribute: function (k) { delete this['attr_' + k]; },
     getAttribute: function (k) {
@@ -39,7 +39,7 @@ function stubEl(id) {
         var m = { 'tf-1': '1', 'tf-7': '7', 'tf-30': '30', 'chip-1': '1', 'chip-7': '7', 'chip-30': '30' };
         return m[id] || '7';
       }
-      if (k === 'data-dir') return 'pi2usd';
+      if (k === 'data-dir') return id === 'cd-target' ? 'target' : id === 'cd-2' ? 'usd2pi' : 'pi2usd';
       if (k === 'data-mode') return 'auto';
       if (k === 'data-cur') return id === 'cur-toman' ? 'toman' : 'usd';
       return null;
@@ -104,7 +104,7 @@ global.document = {
   querySelectorAll: function (sel) {
     if (sel === '.nav-btn') return navIds.map(getEl);
     if (sel === '#tf-selector .seg-btn') return [getEl('tf-1'), getEl('tf-7'), getEl('tf-30')];
-    if (sel === '#calc-dir .seg-btn') return [getEl('cd-1'), getEl('cd-2')];
+    if (sel === '#calc-dir .seg-btn') return [getEl('cd-1'), getEl('cd-2'), getEl('cd-target')];
     if (sel === '#rate-mode .seg-btn') return [getEl('rm-1'), getEl('rm-2')];
     if (sel === '#display-currency .seg-btn') return [getEl('cur-usd'), getEl('cur-toman')];
     if (sel === '.change-chips .chip') return [getEl('chip-1'), getEl('chip-7'), getEl('chip-30')];
@@ -205,6 +205,15 @@ setTimeout(function () {
       t('quick +5% alert armed', PiNama.alerts.list.some(function (a) { return Math.abs(a.price - 0.0955 * 1.05) < 1e-9; }));
       getEl('nav-alerts').listeners.click.forEach(function (fn) { fn(); });
     } catch (e) { t('quick +5% alert armed', false, e.message); }
+
+    /* ماشین‌حساب سود هدف */
+    try {
+      getEl('cd-target').listeners.click.forEach(function (fn) { fn(); });
+      getEl('calc-input').value = '15';
+      // رندر با input event
+      getEl('calc-input').listeners.input.forEach(function (fn) { fn(); });
+      t('profit table rows render', getEl('profit-table').children.length >= 5, 'rows=' + getEl('profit-table').children.length);
+    } catch (e) { t('profit table rows render', false, e.message); }
 
     /* تعویض تب نباید crash کند */
     try {
