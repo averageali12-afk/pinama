@@ -70,7 +70,7 @@
           <span class="live-dot" id="live-dot" title="وضعیت اتصال"></span>
         </div>
         <div class="price-main">
-          <span class="price-usd" id="price-usd">—</span>
+          <span class="price-usd" id="price-usd" aria-live="polite">—</span>
           <span class="price-change" id="price-change">—</span>
         </div>
         <div class="price-toman" id="price-toman">— تومان</div>
@@ -314,7 +314,7 @@
     </button>
   </nav>
 
-  <div id="toast-root"></div>
+  <div id="toast-root" aria-live="polite" aria-atomic="false"></div>
 
   <!-- Pi SDK — باید قبل از اسکریپت‌های اپ لود شود -->
   <script defer src="https://sdk.minepi.com/pi-sdk.js"></script>

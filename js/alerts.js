@@ -144,6 +144,7 @@
           rearm.className = 'del';
           rearm.type = 'button';
           rearm.title = 'فعال‌سازی مجدد';
+          rearm.setAttribute('aria-label', 'فعال‌سازی مجدد هشدار ' + PiNama.fmt.usd(a.price));
           rearm.textContent = '↺';
           rearm.addEventListener('click', function () {
             var ok = self.rearm(a.id, currentUsd);
@@ -159,6 +160,7 @@
         del.className = 'del';
         del.type = 'button';
         del.title = 'حذف';
+        del.setAttribute('aria-label', 'حذف هشدار ' + PiNama.fmt.usd(a.price));
         del.textContent = '✕';
         del.addEventListener('click', function () {
           self.remove(a.id);
