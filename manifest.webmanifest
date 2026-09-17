@@ -12,6 +12,15 @@
   "background_color": "#0e0b16",
   "theme_color": "#0e0b16",
   "categories": ["finance", "utilities"],
+  "screenshots": [
+    {
+      "src": "./icons/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "قیمت لحظه‌ای Pi، چیپ‌های بازه و نمودار"
+    }
+  ],
   "shortcuts": [
     {
       "name": "هشدارهای قیمت",

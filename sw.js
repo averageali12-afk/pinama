@@ -1,7 +1,7 @@
 /* پی‌نما — Service Worker: کش آفلاین app shell + به‌روزرسانی در پس‌زمینه */
 'use strict';
 
-const CACHE = 'pinama-v11';
+const CACHE = 'pinama-v12';
 
 /* app shell — همه با نسخه‌بندی implicit در CACHE name */
 const ASSETS = [
@@ -28,7 +28,8 @@ const ASSETS = [
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-512.png',
-  './icons/favicon-64.png'
+  './icons/favicon-64.png',
+  './icons/screenshot-mobile.png'
 ];
 
 /* نصب: پیش‌کش app shell */

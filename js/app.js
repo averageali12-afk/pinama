@@ -762,6 +762,32 @@
       PiNama.toast('پی‌نما روی گوشی نصب شد 🎉', 'gold');
     });
 
+    // خروجی CSV: پرتفوی روزانه + هشدارها + هشدارهای فعال‌شده
+    el.exportBtn.addEventListener('click', function () {
+      var lines = ['section,key,date,value_usd,price_usd,dir'];
+      (S.get(K.PF_HISTORY, []) || []).forEach(function (r) {
+        lines.push('portfolio_snapshot,,' + r.d + ',' + r.v + ',,');
+      });
+      (alerts.list || []).forEach(function (a) {
+        lines.push('alert,' + a.dir + ',' + new Date(a.createdAt).toISOString().slice(0, 10) + ',' + a.price + ',,' + (a.triggeredAt ? 'triggered' : 'armed'));
+      });
+      (S.get(K.MISSED, []) || []).forEach(function (m) {
+        lines.push('alert_fired,,' + new Date(m.at).toISOString().slice(0, 10) + ',,,' + m.msg.replace(/[,\n]/g, ' '));
+      });
+      var h = fmt.parse(el.pfHoldings.value);
+      if (isFinite(h) && h > 0) {
+        lines.push('holdings,current,,' + h + ',' + (price.state.usd || '') + ',');
+      }
+      var csv = '\uFEFF' + lines.join('\n'); // BOM برای اکسل فارسی
+      var a = document.createElement('a');
+      a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+      a.download = 'pinama-data-' + new Date().toISOString().slice(0, 10) + '.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      PiNama.toast('فایل CSV دانلود شد 📤', 'gold');
+    });
+
     // ریست — تأیید دو مرحله‌ای (دیالوگ‌های native در WebView ناپایدارند)
     var resetArmed = null;
     el.resetBtn.addEventListener('click', function () {
@@ -880,6 +906,7 @@
       resetBtn: $('reset-btn'),
       appVersion: $('app-version'),
       installBtn: $('install-btn'),
+      exportBtn: $('export-btn'),
       streakLine: $('streak-line'),
       chartEl: $('chart'),
       chartTooltip: $('chart-tooltip'),
