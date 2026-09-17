@@ -192,7 +192,7 @@ setTimeout(function () {
     t('source label gate', String(getEl('price-source').textContent).includes('Gate'), 'got "' + getEl('price-source').textContent + '"');
     t('no error banner', getEl('offline-banner').hidden === true);
     t('holdings prefilled 15', String(getEl('pf-holdings').value) === '15', 'got "' + getEl('pf-holdings').value + '"');
-    t('version rendered', String(getEl('app-version').textContent).indexOf('1.2.0') !== -1, 'got "' + getEl('app-version').textContent + '"');
+    t('version rendered', String(getEl('app-version').textContent).indexOf('1.3.0') !== -1, 'got "' + getEl('app-version').textContent + '"');
 
     /* واحد نمایش تومان: قیمت بزرگ باید تومان شود */
     try {
