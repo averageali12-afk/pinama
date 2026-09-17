@@ -639,6 +639,14 @@ body {
   line-height: 1.8;
 }
 
+/* آن‌بوردینگ بار اول */
+.onboarding {
+  border-color: var(--purple);
+  box-shadow: 0 0 0 1px rgba(138, 79, 255, 0.3), 0 8px 24px rgba(138, 79, 255, 0.25);
+}
+.ob-line { font-size: 13.5px; color: var(--text-dim); margin-bottom: 8px; }
+.onboarding .btn { margin-top: 10px; }
+
 /* ─── صفحات حقوقی (شرایط/حریم خصوصی) ─── */
 .legal { line-height: 2; }
 

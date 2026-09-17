@@ -19,12 +19,14 @@
   <meta property="og:type" content="website" />
   <meta property="og:title" content="PiNama — Persian Pi Network Price Tracker" />
   <meta property="og:description" content="Live Pi price (Gate.io), charts, toman converter, portfolio and price alerts — free, offline-capable, no accounts. Built for the Pi Network ecosystem." />
-  <meta property="og:image" content="icons/icon-512.png" />
+  <meta property="og:image" content="https://averageali12-afk.github.io/pinama/icons/icon-512.png" />
+  <meta property="og:image:width" content="512" />
+  <meta property="og:image:height" content="512" />
   <meta property="og:url" content="https://averageali12-afk.github.io/pinama/" />
-  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:card" content="summary" />
   <meta name="twitter:title" content="PiNama — Persian Pi Network Price Tracker" />
   <meta name="twitter:description" content="Live Pi price, charts, toman converter, portfolio and alerts. Free and offline-capable." />
-  <meta name="twitter:image" content="icons/icon-512.png" />
+  <meta name="twitter:image" content="https://averageali12-afk.github.io/pinama/icons/icon-512.png" />
   <link rel="stylesheet" href="css/fonts.css" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
@@ -49,6 +51,16 @@
   </div>
 
   <main class="container">
+
+    <!-- آن‌بوردینگ بار اول -->
+    <div class="card onboarding" id="onboarding" hidden>
+      <h3 class="card-title">👋 به پی‌نما خوش آمدی</h3>
+      <p class="ob-line">۱️⃣ قیمت زنده، نمودار و ماشین‌حساب تومانی همین‌جاست</p>
+      <p class="ob-line">۲️⃣ از تب «هشدار» با یک لمس (+۵٪ / −۵٪) آلارم قیمت بگذار</p>
+      <p class="ob-line">۳️⃣ اگر نرخ دلار خودکار نیامد، از تنظیمات نرخ دستی بگذار</p>
+      <p class="ob-line">۴️⃣ از منوی گوشی، «نصب روی گوشی» را بزن تا مثل اپ اصلی شود</p>
+      <button class="btn btn-primary" id="onboarding-ok" type="button">فهمیدم، بریم 🚀</button>
+    </div>
 
     <!-- ═══════════ تب: قیمت ═══════════ -->
     <section id="view-price" class="view active" aria-label="قیمت">

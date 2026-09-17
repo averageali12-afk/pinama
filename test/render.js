@@ -231,6 +231,13 @@ setTimeout(function () {
       t('amount chip sets input', getEl('calc-input').value === '1000', 'got "' + getEl('calc-input').value + '"');
     } catch (e) { t('amount chip sets input', false, e.message); }
 
+    /* آن‌بوردینگ: بار اول نمایش، بعد از OK ذخیره شود */
+    t('onboarding shows first run', getEl('onboarding').hidden === false);
+    try {
+      getEl('onboarding-ok').listeners.click.forEach(function (fn) { fn(); });
+      t('onboarding dismiss persists', getEl('onboarding').hidden === true && PiNama.storage.get('onboarded', false) === true);
+    } catch (e) { t('onboarding dismiss persists', false, e.message); }
+
     /* تعویض تب نباید crash کند */
     try {
       getEl('nav-portfolio').listeners.click.forEach(function (fn) { fn(); });

@@ -1,7 +1,7 @@
 /* پی‌نما — Service Worker: کش آفلاین app shell + به‌روزرسانی در پس‌زمینه */
 'use strict';
 
-const CACHE = 'pinama-v12';
+const CACHE = 'pinama-v13';
 
 /* app shell — همه با نسخه‌بندی implicit در CACHE name */
 const ASSETS = [

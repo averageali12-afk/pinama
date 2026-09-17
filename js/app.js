@@ -907,6 +907,8 @@
       appVersion: $('app-version'),
       installBtn: $('install-btn'),
       exportBtn: $('export-btn'),
+      onboarding: $('onboarding'),
+      onboardingOk: $('onboarding-ok'),
       streakLine: $('streak-line'),
       chartEl: $('chart'),
       chartTooltip: $('chart-tooltip'),
@@ -977,6 +979,15 @@
 
     el.envBadge.hidden = pi.inPiBrowser;
     if ('Notification' in window) updateNotifUi(Notification.permission);
+
+    // آن‌بوردینگ — فقط بار اول
+    if (!S.get(K.ONBOARDED, false)) {
+      el.onboarding.hidden = false;
+    }
+    el.onboardingOk.addEventListener('click', function () {
+      el.onboarding.hidden = true;
+      S.set(K.ONBOARDED, true);
+    });
 
     // میان‌بُر PWA (لمس طولانی آیکون): #alerts / #portfolio / #settings
     var hash = (location.hash || '').replace('#', '');

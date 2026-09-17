@@ -57,6 +57,7 @@ PiNama.config = {
     PF_HISTORY: 'pfHistory',
     CALC_DIR: 'calcDir',
     CALC_INPUT: 'calcInput',
-    DISPLAY_CURRENCY: 'displayCurrency'
+    DISPLAY_CURRENCY: 'displayCurrency',
+    ONBOARDED: 'onboarded'
   }
 };
