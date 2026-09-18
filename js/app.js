@@ -66,12 +66,13 @@
 
     // حالت نمایش: پیش‌فرض دلار-بزرگ؛ تومان-بزرگ برای کاربری که تومان فکر می‌کند
     var tomanVal = (st.usd != null && st.tomanRate) ? st.usd * st.tomanRate : null;
+    var tomanWord = ' ' + PiNama.i18n.t('toman_suffix').trim();
     if (S.get(K.DISPLAY_CURRENCY, 'usd') === 'toman' && tomanVal != null) {
-      el.priceUsd.textContent = fmt.num(tomanVal, 0) + ' تومان';
+      el.priceUsd.textContent = fmt.num(tomanVal, 0) + tomanWord;
       el.priceToman.textContent = fmt.usd(st.usd);
     } else {
       el.priceUsd.textContent = fmt.usd(st.usd);
-      el.priceToman.textContent = tomanVal != null ? fmt.num(tomanVal, 0) + ' تومان' : '—';
+      el.priceToman.textContent = tomanVal != null ? fmt.num(tomanVal, 0) + tomanWord : '—';
     }
 
     var ch = st.change24h;
@@ -358,7 +359,8 @@
         }
       }
       if (!chip) return;
-      chip.textContent = (days === 1 ? '۲۴ ساعت ' : days === 7 ? '۷ روز ' : '۳۰ روز ') + fmt.pct(pct);
+      var tfLabel = PiNama.i18n.t(days === 1 ? 'tf_1' : days === 7 ? 'tf_7' : 'tf_30');
+      chip.textContent = tfLabel + ' ' + fmt.pct(pct);
       chip.classList.remove('up', 'down');
       chip.classList.add(pct >= 0 ? 'up' : 'down');
 
@@ -730,6 +732,19 @@
       });
     });
 
+    // زبان
+    el.langBtns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var lang = btn.getAttribute('data-lang');
+        el.langBtns.forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        S.set(K.LANG, lang);
+        PiNama.i18n.apply(lang);
+        renderPrice(); renderCalc(); renderPortfolio(); renderRate(); renderAlertsList();
+        updateAllChangeChips();
+      });
+    });
+
     // واحد نمایش
     el.currencyBtns.forEach(function (btn) {
       btn.addEventListener('click', function () {
@@ -920,6 +935,7 @@
       calcDirBtns: Array.prototype.slice.call(document.querySelectorAll('#calc-dir .seg-btn')),
       rateModeBtns: Array.prototype.slice.call(document.querySelectorAll('#rate-mode .seg-btn')),
       currencyBtns: Array.prototype.slice.call(document.querySelectorAll('#display-currency .seg-btn')),
+      langBtns: Array.prototype.slice.call(document.querySelectorAll('#lang-select .seg-btn')),
       views: Array.prototype.slice.call(document.querySelectorAll('.view'))
     };
 
@@ -944,6 +960,13 @@
     var cur = S.get(K.DISPLAY_CURRENCY, 'usd');
     el.currencyBtns.forEach(function (b) {
       b.classList.toggle('active', b.getAttribute('data-cur') === cur);
+    });
+
+    // زبان ذخیره‌شده — دکمه فعال + اعمال قبل از رندر
+    var savedLang = S.get(K.LANG, 'fa');
+    PiNama.i18n.apply(savedLang);
+    el.langBtns.forEach(function (b) {
+      b.classList.toggle('active', b.getAttribute('data-lang') === savedLang);
     });
 
     // سرویس‌ها

@@ -43,6 +43,12 @@ function stubEl(id) {
       if (k === 'data-amount') return id.replace('amt-', '');
       if (k === 'data-mode') return 'auto';
       if (k === 'data-cur') return id === 'cur-toman' ? 'toman' : 'usd';
+      if (k === 'data-lang') return id === 'lang-en' ? 'en' : 'fa';
+      if (k === 'data-i18n') {
+        if (id === 'auth-btn') return 'login';
+        if (id === 'missed-clear') return 'missed_clear';
+        return null;
+      }
       return null;
     },
     disabled: false,
@@ -98,6 +104,10 @@ global.fetch = function (url) {
 /* DOM stub */
 const listeners = {};
 global.document = {
+  documentElement: {
+    setAttribute: function () { },
+    getAttribute: function () { return null; }
+  },
   getElementById: getEl,
   _title: '',
   get title() { return this._title; },
@@ -109,7 +119,9 @@ global.document = {
     if (sel === '#calc-amounts .chip') return [getEl('amt-1'), getEl('amt-10'), getEl('amt-100'), getEl('amt-1000')];
     if (sel === '#rate-mode .seg-btn') return [getEl('rm-1'), getEl('rm-2')];
     if (sel === '#display-currency .seg-btn') return [getEl('cur-usd'), getEl('cur-toman')];
+    if (sel === '#lang-select .seg-btn') return [getEl('lang-fa'), getEl('lang-en')];
     if (sel === '.change-chips .chip') return [getEl('chip-1'), getEl('chip-7'), getEl('chip-30')];
+    if (sel === '[data-i18n]') return [getEl('auth-btn'), getEl('missed-clear')];
     if (sel === '.quick-alerts .btn') return [getEl('quick-plus'), getEl('quick-minus')];
     if (sel === '.view') return ['price', 'portfolio', 'alerts', 'settings'].map(function (v) { return getEl('view-' + v); });
     return [];
@@ -149,7 +161,7 @@ global.window.Pi = undefined;
 /* ─── لود ماژول‌ها به ترتیب index.html ─── */
 const fs = require('fs');
 const path = require('path');
-const files = ['config.js', 'storage.js', 'price.js', 'chart.js', 'pi.js', 'ads.js', 'alerts.js', 'app.js'];
+const files = ['config.js', 'storage.js', 'i18n.js', 'price.js', 'chart.js', 'pi.js', 'ads.js', 'alerts.js', 'app.js'];
 files.forEach(function (f) {
   eval(fs.readFileSync(path.join(__dirname, '..', 'js', f), 'utf8'));
 });
@@ -237,6 +249,14 @@ setTimeout(function () {
       getEl('onboarding-ok').listeners.click.forEach(function (fn) { fn(); });
       t('onboarding dismiss persists', getEl('onboarding').hidden === true && PiNama.storage.get('onboarded', false) === true);
     } catch (e) { t('onboarding dismiss persists', false, e.message); }
+
+    /* دوزبانگی: سوییچ انگلیسی */
+    try {
+      getEl('lang-en').listeners.click.forEach(function (fn) { fn(); });
+      t('English switch applies', PiNama.i18n.current() === 'en' && String(document.getElementById('auth-btn').textContent) === 'Sign in with Pi', 'auth="' + getEl('auth-btn').textContent + '"');
+      getEl('lang-fa').listeners.click.forEach(function (fn) { fn(); });
+      t('Persian switch restores', PiNama.i18n.current() === 'fa' && String(getEl('auth-btn').textContent) === 'ورود با Pi');
+    } catch (e) { t('English switch applies', false, e.message); }
 
     /* تعویض تب نباید crash کند */
     try {

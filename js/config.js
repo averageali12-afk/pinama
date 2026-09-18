@@ -58,6 +58,7 @@ PiNama.config = {
     CALC_DIR: 'calcDir',
     CALC_INPUT: 'calcInput',
     DISPLAY_CURRENCY: 'displayCurrency',
-    ONBOARDED: 'onboarded'
+    ONBOARDED: 'onboarded',
+    LANG: 'lang'
   }
 };

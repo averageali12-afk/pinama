@@ -37,12 +37,12 @@
       <span class="brand-logo">π</span>
       <div class="brand-text">
         <strong>پی‌نما</strong>
-        <small>ردیاب قیمت Pi</small>
+        <small data-i18n="brand_sub">ردیاب قیمت Pi</small>
       </div>
     </div>
     <div class="auth-area">
       <span id="env-badge" class="env-badge" hidden>خارج از Pi Browser</span>
-      <button id="auth-btn" class="btn btn-ghost btn-sm" type="button">ورود با Pi</button>
+      <button id="auth-btn" class="btn btn-ghost btn-sm" type="button" data-i18n="login">ورود با Pi</button>
     </div>
   </header>
 
@@ -54,12 +54,12 @@
 
     <!-- آن‌بوردینگ بار اول -->
     <div class="card onboarding" id="onboarding" hidden>
-      <h3 class="card-title">👋 به پی‌نما خوش آمدی</h3>
-      <p class="ob-line">۱️⃣ قیمت زنده، نمودار و ماشین‌حساب تومانی همین‌جاست</p>
-      <p class="ob-line">۲️⃣ از تب «هشدار» با یک لمس (+۵٪ / −۵٪) آلارم قیمت بگذار</p>
-      <p class="ob-line">۳️⃣ اگر نرخ دلار خودکار نیامد، از تنظیمات نرخ دستی بگذار</p>
-      <p class="ob-line">۴️⃣ از منوی گوشی، «نصب روی گوشی» را بزن تا مثل اپ اصلی شود</p>
-      <button class="btn btn-primary" id="onboarding-ok" type="button">فهمیدم، بریم 🚀</button>
+      <h3 class="card-title" data-i18n="onb_title">👋 به پی‌نما خوش آمدی</h3>
+      <p class="ob-line" data-i18n="onb_1">۱️⃣ قیمت زنده، نمودار و ماشین‌حساب تومانی همین‌جاست</p>
+      <p class="ob-line" data-i18n="onb_2">۲️⃣ از تب «هشدار» با یک لمس (+۵٪ / −۵٪) آلارم قیمت بگذار</p>
+      <p class="ob-line" data-i18n="onb_3">۳️⃣ اگر نرخ دلار خودکار نیامد، از تنظیمات نرخ دستی بگذار</p>
+      <p class="ob-line" data-i18n="onb_4">۴️⃣ از منوی گوشی، «نصب روی گوشی» را بزن تا مثل اپ اصلی شود</p>
+      <button class="btn btn-primary" id="onboarding-ok" type="button" data-i18n="onb_ok">فهمیدم، بریم 🚀</button>
     </div>
 
     <!-- ═══════════ تب: قیمت ═══════════ -->
@@ -91,9 +91,9 @@
         <p class="range-line" id="range-line" hidden></p>
 
         <div class="segmented" id="tf-selector" role="tablist">
-          <button class="seg-btn" data-days="1" type="button">۲۴ ساعت</button>
-          <button class="seg-btn active" data-days="7" type="button">۷ روز</button>
-          <button class="seg-btn" data-days="30" type="button">۳۰ روز</button>
+          <button class="seg-btn" data-days="1" type="button" data-i18n="tf_1">۲۴ ساعت</button>
+          <button class="seg-btn active" data-days="7" type="button" data-i18n="tf_7">۷ روز</button>
+          <button class="seg-btn" data-days="30" type="button" data-i18n="tf_30">۳۰ روز</button>
         </div>
 
         <div class="chart-wrap" id="chart-wrap">
@@ -104,30 +104,30 @@
 
         <div class="stats-grid">
           <div class="stat">
-            <small>سقف ۲۴ ساعت</small>
+            <small data-i18n="stat_high">سقف ۲۴ ساعت</small>
             <b id="stat-high">—</b>
           </div>
           <div class="stat">
-            <small>کف ۲۴ ساعت</small>
+            <small data-i18n="stat_low">کف ۲۴ ساعت</small>
             <b id="stat-low">—</b>
           </div>
           <div class="stat">
-            <small>ارزش بازار</small>
+            <small data-i18n="stat_mcap">ارزش بازار</small>
             <b id="stat-mcap">—</b>
           </div>
           <div class="stat">
-            <small>حجم ۲۴ ساعت</small>
+            <small data-i18n="stat_vol">حجم ۲۴ ساعت</small>
             <b id="stat-vol">—</b>
           </div>
         </div>
       </div>
 
       <div class="card">
-        <h3 class="card-title"> ماشین‌حساب </h3>
+        <h3 class="card-title" data-i18n="calc_title"> ماشین‌حساب </h3>
         <div class="calc-dir" id="calc-dir">
-          <button class="seg-btn active" data-dir="pi2usd" type="button">Pi ← تومان/دلار</button>
-          <button class="seg-btn" data-dir="usd2pi" type="button">تومان/دلار ← Pi</button>
-          <button class="seg-btn" data-dir="target" type="button">سود هدف 🎯</button>
+          <button class="seg-btn active" data-dir="pi2usd" type="button" data-i18n="calc_dir_pi2">Pi ← تومان/دلار</button>
+          <button class="seg-btn" data-dir="usd2pi" type="button" data-i18n="calc_dir_usd2">تومان/دلار ← Pi</button>
+          <button class="seg-btn" data-dir="target" type="button" data-i18n="calc_dir_target">سود هدف 🎯</button>
         </div>
         <label class="field">
           <span id="calc-input-label">مقدار Pi</span>
@@ -140,7 +140,7 @@
           <button class="chip" type="button" data-amount="1000">۱۰۰۰</button>
         </div>
         <label class="field" id="calc-profit-field" hidden>
-          <span>میانگین خرید دلاری (اختیاری)</span>
+          <span data-i18n="calc_avg_label">میانگین خرید دلاری (اختیاری)</span>
           <input type="text" id="calc-profit-avg" inputmode="decimal" placeholder="0.00" dir="ltr" />
         </label>
         <div class="calc-result" id="calc-result">—</div>
@@ -151,66 +151,66 @@
     <!-- ═══════════ تب: پرتفوی ═══════════ -->
     <section id="view-portfolio" class="view" aria-label="پرتفوی">
       <div class="card">
-        <h3 class="card-title">پرتفوی من</h3>
+        <h3 class="card-title" data-i18n="pf_title">پرتفوی من</h3>
         <label class="field">
-          <span>موجودی Pi</span>
+          <span data-i18n="pf_holdings">موجودی Pi</span>
           <input type="text" id="pf-holdings" inputmode="decimal" min="0" step="any" placeholder="15" />
         </label>
         <label class="field">
-          <span>میانگین قیمت خرید (دلار — اختیاری)</span>
+          <span data-i18n="pf_avg">میانگین قیمت خرید (دلار — اختیاری)</span>
           <input type="text" id="pf-avg" inputmode="decimal" min="0" step="any" placeholder="0.00" />
         </label>
 
         <div class="pf-values">
           <div class="pf-box">
-            <small>ارزش دلاری</small>
+            <small data-i18n="pf_usd">ارزش دلاری</small>
             <b id="pf-usd">—</b>
           </div>
           <div class="pf-box">
-            <small>ارزش تومانی</small>
+            <small data-i18n="pf_toman">ارزش تومانی</small>
             <b id="pf-toman">—</b>
           </div>
         </div>
         <div class="pf-pl" id="pf-pl" hidden>
-          <small>سود / زیان</small>
+          <small data-i18n="pf_pl">سود / زیان</small>
           <b id="pf-pl-value">—</b>
         </div>
         <div class="pf-pl" id="pf-day-change" hidden>
-          <small>ارزش پرتفوی</small>
+          <small data-i18n="pf_day">ارزش پرتفوی</small>
           <b id="pf-day-value">—</b>
         </div>
         <div class="pf-pl" id="pf-week-change" hidden>
-          <small>روند هفتگی</small>
+          <small data-i18n="pf_week">روند هفتگی</small>
           <b id="pf-week-value">—</b>
         </div>
-        <button class="btn btn-ghost btn-sm" id="pf-share" type="button">اشتراک وضعیت من 📊</button>
-        <p class="hint">داده‌ها فقط روی همین دستگاه ذخیره می‌شوند.</p>
+        <button class="btn btn-ghost btn-sm" id="pf-share" type="button" data-i18n="pf_share">اشتراک وضعیت من 📊</button>
+        <p class="hint" data-i18n="pf_hint">داده‌ها فقط روی همین دستگاه ذخیره می‌شوند.</p>
       </div>
     </section>
 
     <!-- ═══════════ تب: هشدارها ═══════════ -->
     <section id="view-alerts" class="view" aria-label="هشدارها">
       <div class="card" id="missed-card" hidden>
-        <h3 class="card-title">آنچه از دست دادی</h3>
+        <h3 class="card-title" data-i18n="missed_title">آنچه از دست دادی</h3>
         <ul class="alert-list" id="missed-list"></ul>
-        <button class="btn btn-ghost btn-sm" id="missed-clear" type="button">پاک‌کردن</button>
+        <button class="btn btn-ghost btn-sm" id="missed-clear" type="button" data-i18n="missed_clear">پاک‌کردن</button>
       </div>
       <div class="card">
-        <h3 class="card-title">هشدار قیمت</h3>
+        <h3 class="card-title" data-i18n="alerts_title">هشدار قیمت</h3>
         <div class="alert-form">
           <select id="alert-dir" class="select" dir="rtl">
-            <option value="above">وقتی Pi رفت بالای</option>
-            <option value="below">وقتی Pi افتاد زیر</option>
+            <option value="above" data-i18n="alert_above">وقتی Pi رفت بالای</option>
+            <option value="below" data-i18n="alert_below">وقتی Pi افتاد زیر</option>
           </select>
           <input type="text" id="alert-price" inputmode="decimal" min="0" step="any" placeholder="0.10" dir="ltr" />
-          <button class="btn btn-primary" id="alert-add" type="button">افزودن</button>
+          <button class="btn btn-primary" id="alert-add" type="button" data-i18n="alert_add">افزودن</button>
         </div>
         <div class="quick-alerts">
           <button class="btn btn-ghost btn-sm" id="quick-plus" type="button">+۵٪ بالاتر از الان</button>
           <button class="btn btn-ghost btn-sm" id="quick-minus" type="button">−۵٪ پایین‌تر از الان</button>
         </div>
         <button class="btn btn-ghost btn-sm" id="notif-enable" type="button">
-          فعال‌سازی نوتیفیکیشن مرورگر
+          <span data-i18n="alert_notif">فعال‌سازی نوتیفیکیشن مرورگر</span>
         </button>
         <ul class="alert-list" id="alert-list"></ul>
         <p class="hint" id="alert-hint">هشدارها وقتی اپ باز باشد بررسی می‌شوند.</p>
@@ -220,22 +220,22 @@
     <!-- ═══════════ تب: تنظیمات ═══════════ -->
     <section id="view-settings" class="view" aria-label="تنظیمات">
       <div class="card">
-        <h3 class="card-title">حساب Pi</h3>
+        <h3 class="card-title" data-i18n="set_account">حساب Pi</h3>
         <div class="row-between">
-          <span id="account-status" class="muted">وارد نشده‌اید</span>
-          <button class="btn btn-ghost btn-sm" id="logout-btn" type="button" hidden>خروج</button>
+          <span id="account-status" class="muted" data-i18n="set_logged_out">وارد نشده‌اید</span>
+          <button class="btn btn-ghost btn-sm" id="logout-btn" type="button" hidden data-i18n="set_logout">خروج</button>
         </div>
-        <p class="hint">ورود فقط برای احراز هویت درون‌برنامه‌ای است؛ بدون آن هم همه امکانات کار می‌کند.</p>
+        <p class="hint" data-i18n="set_login_hint">ورود فقط برای احراز هویت درون‌برنامه‌ای است؛ بدون آن هم همه امکانات کار می‌کند.</p>
       </div>
 
       <div class="card">
-        <h3 class="card-title">نرخ دلار (تومان)</h3>
+        <h3 class="card-title" data-i18n="set_rate">نرخ دلار (تومان)</h3>
         <div class="segmented" id="rate-mode">
-          <button class="seg-btn active" data-mode="auto" type="button">خودکار</button>
-          <button class="seg-btn" data-mode="manual" type="button">دستی</button>
+          <button class="seg-btn active" data-mode="auto" type="button" data-i18n="set_rate_auto">خودکار</button>
+          <button class="seg-btn" data-mode="manual" type="button" data-i18n="set_rate_manual">دستی</button>
         </div>
         <label class="field" id="rate-manual-field" hidden>
-          <span>نرخ هر دلار به تومان</span>
+          <span data-i18n="set_rate_manual_label">نرخ هر دلار به تومان</span>
           <input type="text" id="rate-manual" inputmode="numeric" min="0" step="any" dir="ltr" />
         </label>
         <div class="row-between">
@@ -244,35 +244,43 @@
       </div>
 
       <div class="card">
-        <h3 class="card-title">واحد نمایش</h3>
+        <h3 class="card-title" data-i18n="set_currency">واحد نمایش</h3>
         <div class="segmented" id="display-currency">
-          <button class="seg-btn active" data-cur="usd" type="button">دلار بزرگ</button>
-          <button class="seg-btn" data-cur="toman" type="button">تومان بزرگ</button>
+          <button class="seg-btn active" data-cur="usd" type="button" data-i18n="set_cur_usd">دلار بزرگ</button>
+          <button class="seg-btn" data-cur="toman" type="button" data-i18n="set_cur_toman">تومان بزرگ</button>
         </div>
-        <p class="hint">قیمت اصلی صفحه با کدام واحد بزرگ نمایش داده شود.</p>
+        <p class="hint" data-i18n="set_currency_hint">قیمت اصلی صفحه با کدام واحد بزرگ نمایش داده شود.</p>
       </div>
 
       <div class="card">
-        <h3 class="card-title">حمایت از توسعه</h3>
-        <p class="hint">با تماشای یک تبلیغ کوتاه، از این اپ حمایت کنید (فقط داخل Pi Browser و پس از تایید Ad Network).</p>
-        <button class="btn btn-primary" id="watch-ad-btn" type="button">تماشای تبلیغ حمایتی</button>
+        <h3 class="card-title" data-i18n="set_support">حمایت از توسعه</h3>
+        <p class="hint" data-i18n="set_support_hint">با تماشای یک تبلیغ کوتاه، از این اپ حمایت کنید (فقط داخل Pi Browser و پس از تایید Ad Network).</p>
+        <button class="btn btn-primary" id="watch-ad-btn" type="button" data-i18n="set_watch_ad">تماشای تبلیغ حمایتی</button>
         <span class="muted ad-status" id="ad-status"></span>
       </div>
 
       <div class="card">
-        <h3 class="card-title">معرفی به دوستان</h3>
-        <button class="btn btn-ghost" id="share-btn" type="button">اشتراک‌گذاری پی‌نما</button>
+        <h3 class="card-title" data-i18n="set_share">معرفی به دوستان</h3>
+        <button class="btn btn-ghost" id="share-btn" type="button" data-i18n="set_share_btn">اشتراک‌گذاری پی‌نما</button>
       </div>
 
       <div class="card">
-        <h3 class="card-title">درباره پی‌نما</h3>
+        <h3 class="card-title" data-i18n="set_lang">زبان / Language</h3>
+        <div class="segmented" id="lang-select">
+          <button class="seg-btn active" data-lang="fa" type="button">فارسی</button>
+          <button class="seg-btn" data-lang="en" type="button">English</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title" data-i18n="set_about">درباره پی‌نما</h3>
         <button class="btn btn-primary" id="install-btn" type="button" hidden>نصب روی گوشی 📲</button>
-        <p class="hint">
+        <p class="hint" data-i18n="set_about_hint">
           پی‌نما یک اپ جامعه‌محور برای اکوسیستم Pi Network است — قیمت لحظه‌ای، نمودار، ماشین‌حساب تومانی، پرتفوی و هشدار.
         </p>
         <p class="hint" id="app-version">نسخه —</p>
         <details class="reviewer-note">
-          <summary>For Ecosystem reviewers (English)</summary>
+          <summary data-i18n="reviewers">For Ecosystem reviewers (English)</summary>
           <p>
             <b>PiNama</b> is a free, open-source price tracker for Pi Network, built for Persian-speaking
             Pioneers. Features: live PI/USDT price (Gate.io → CoinGecko → OKX), candlestick chart
@@ -283,9 +291,9 @@
             Source: github.com/averageali12-afk/pinama
           </p>
         </details>
-        <button class="btn btn-danger btn-sm" id="reset-btn" type="button">پاک‌کردن همه داده‌ها</button>
+        <button class="btn btn-danger btn-sm" id="reset-btn" type="button" data-i18n="set_reset">پاک‌کردن همه داده‌ها</button>
         <button class="btn btn-ghost btn-sm" id="export-btn" type="button" style="margin-top:8px">خروجی CSV داده‌ها 📤</button>
-        <p class="hint">⚠️ این اپ توصیه مالی نیست. مسئولیت معامله با شماست.</p>
+        <p class="hint" data-i18n="set_disclaimer">⚠️ این اپ توصیه مالی نیست. مسئولیت معامله با شماست.</p>
         <div class="legal-links">
           <a href="terms.html">شرایط استفاده</a>
           <span class="dot-sep"></span>
@@ -320,6 +328,7 @@
   <script defer src="https://sdk.minepi.com/pi-sdk.js"></script>
   <script defer src="js/config.js"></script>
   <script defer src="js/storage.js"></script>
+  <script defer src="js/i18n.js"></script>
   <script defer src="js/price.js"></script>
   <script defer src="js/chart.js"></script>
   <script defer src="js/pi.js"></script>

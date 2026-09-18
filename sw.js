@@ -1,7 +1,7 @@
 /* پی‌نما — Service Worker: کش آفلاین app shell + به‌روزرسانی در پس‌زمینه */
 'use strict';
 
-const CACHE = 'pinama-v15';
+const CACHE = 'pinama-v16';
 
 /* app shell — همه با نسخه‌بندی implicit در CACHE name */
 const ASSETS = [
@@ -19,6 +19,7 @@ const ASSETS = [
   './css/fonts/Vazirmatn-Bold.woff2',
   './js/config.js',
   './js/storage.js',
+  './js/i18n.js',
   './js/price.js',
   './js/chart.js',
   './js/pi.js',
